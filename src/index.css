@@ -1,0 +1,164 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --font-sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  }
+
+  html,
+  body,
+  #root {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background-color: #ffffff;
+    color: #111215;
+    font-family: var(--font-sans);
+    overflow: hidden;
+  }
+}
+
+.font-mono-tabular {
+  font-family: var(--font-sans);
+  font-variant-numeric: tabular-nums;
+}
+
+.reveal-dialog-font,
+.reveal-dialog-font * {
+  font-family: "Luis Hand", "Helvetica Neue", Helvetica, sans-serif;
+  font-weight: 400;
+  font-synthesis: none;
+}
+
+@keyframes dialogGentleRise {
+  0% {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes dialogButtonFade {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-dialog-rise {
+  opacity: 0;
+  animation: dialogGentleRise 600ms cubic-bezier(0.22, 1, 0.36, 1) var(--dialog-delay, 300ms) forwards;
+}
+
+.animate-dialog-button {
+  opacity: 0;
+  animation: dialogButtonFade 450ms cubic-bezier(0.22, 1, 0.36, 1) var(--button-delay, 600ms) forwards;
+}
+
+@keyframes hintBob {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+.animate-hint-bob {
+  animation: hintBob 2s ease-in-out infinite;
+}
+
+.mode-btn {
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  transition: transform 180ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.mode-btn:hover {
+  transform: rotate(-3deg) scale(1.05);
+}
+
+.mode-btn:active {
+  transform: rotate(-2deg) scale(0.98);
+}
+
+@keyframes cleanPosterSwapIn {
+  0% {
+    opacity: 0;
+    transform: scale(1.03);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1.03);
+  }
+}
+
+.animate-clean-poster-in {
+  opacity: 0;
+  transform: scale(1.03);
+  animation: cleanPosterSwapIn 380ms ease-out forwards;
+}
+
+@keyframes cleanPosterSettle {
+  0% {
+    opacity: 1;
+    transform: scale(1.03);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-clean-poster-settle {
+  opacity: 1;
+  animation: cleanPosterSettle 500ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes cleanPosterSwapOut {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+}
+
+.animate-clean-poster-out {
+  opacity: 1;
+  animation: cleanPosterSwapOut 340ms ease-out forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-dialog-rise,
+  .animate-dialog-button,
+  .animate-clean-poster-in,
+  .animate-clean-poster-settle,
+  .animate-hint-bob {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .animate-clean-poster-out {
+    animation: none;
+    opacity: 0;
+    transform: none;
+  }
+}

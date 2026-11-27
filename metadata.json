@@ -1,0 +1,6 @@
+{
+  "name": "The Movie Die",
+  "description": "A giant 3D spherical polyhedron die featuring every film from your watchlist, rolled with realistic physics and cryptographically fair randomness.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
