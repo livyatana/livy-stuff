@@ -1,5 +1,515 @@
 [
   {
+    "id": 40882,
+    "title": "The Mirror",
+    "year": "1997",
+    "poster_path": "/hCCQE0qd4kKw5hElo7Mi0UTbN8c.jpg",
+    "overview": "When a young girl's mother doesn't meet her after school, she tries to navigate the streets of Tehran by herself.",
+    "vote_average": 7.235,
+    "media_type": "movie",
+    "genre": "Drama",
+    "runtime": 94
+  },
+  {
+    "id": 1256221,
+    "title": "Samuel: Hollywood vs Hollywood",
+    "year": "2024",
+    "poster_path": "/canCdj3s7ZgxmeLhxdCtPUDc80a.jpg",
+    "overview": "The epic story of a great man of cinema, Samuel Bronston, as recounted by those who knew him. Bronston created a parallel Hollywood in Spain that was much larger than the one in California, and this provoked the wrath of an industry that ultimately devoured him.",
+    "vote_average": 0,
+    "media_type": "movie",
+    "genre": "Documentary"
+  },
+  {
+    "id": 1841435,
+    "title": "The Making of The Penguin",
+    "year": "2024",
+    "poster_path": "/ia7nZGyEJTg1qNo261y1ZfvhVTZ.jpg",
+    "overview": "A Behind-the-Scenes Look at the Making of the HBO Series “The Penguin”",
+    "vote_average": 0,
+    "media_type": "movie"
+  },
+  {
+    "id": 475094,
+    "title": "The Captain",
+    "year": "2017",
+    "poster_path": "/jdUSP7svZ3DOgCnB0upT1yiueUY.jpg",
+    "overview": "Germany, 1945. Soldier Willi Herold, a deserter of the German army, stumbles into a uniform of a Nazi captain abandoned during the last and desperate weeks of the Third Reich. Newly emboldened by the allure of a suit that he has stolen only to stay warm, Willi discovers that many Germans will follow the leader, whoever he is.",
+    "vote_average": 7.218,
+    "media_type": "movie",
+    "genre": "War",
+    "runtime": 118
+  },
+  {
+    "id": 497603,
+    "title": "A Bloody Finger in Your Mouth",
+    "year": "2017",
+    "poster_path": "/uzrVFq6w4dUXbSwqphoBVwaKt7j.jpg",
+    "overview": "A short documentary about the making of Twin Peaks: The Return. This time focused in the planing and technical execution of some particular scenes.",
+    "vote_average": 6,
+    "media_type": "movie",
+    "genre": "Documentary",
+    "runtime": 27
+  },
+  {
+    "id": 51859,
+    "title": "Trigun: Badlands Rumble",
+    "year": "1998",
+    "poster_path": "/7JYK0FBs2nX6ikqeT6rDzEZRM.jpg",
+    "overview": "In a quicksand surrounded town called Makka, rumors spread of a legendary robber named Gasback is after the town. To protect it, Mayor Kepler has hired bounty hunters. These hunters have been following Gasback from town to town in hopes of getting the bounty. Vash the Stampede is in town, along with Meryl and Milly, along with the female bounty hunter Amelia and Nicholas D. Wolfwood.",
+    "vote_average": 7.479,
+    "media_type": "movie",
+    "genre": "Action",
+    "runtime": 91
+  },
+  {
+    "id": 489092,
+    "title": "Revolutionary Girl Utena: The Musical Comedy",
+    "year": "1997",
+    "poster_path": "/sKO6o2rv1zAtW3bPgc4eEDwI1cN.jpg",
+    "overview": "A musical theater show based on the manga \"Revolutionary Girl Utena\"",
+    "vote_average": 7,
+    "media_type": "movie",
+    "genre": "Music",
+    "runtime": 60
+  },
+  {
+    "id": 1173976,
+    "title": "Kino's Journey: Life Goes On",
+    "year": "2003",
+    "poster_path": "/iO7gXnPoGKF34wptFR0b2skeFS2.jpg",
+    "overview": "In this prequel to the Kino no Tabi series, young Kino is being trained by their teacher. They learn how to ride their motorrad Hermes and develops their gift of excellent marksmanship. However, their guilt concerning the real Kino is with them when they decide to set off on a journey. All the while, Kino is becoming confused about their real identity.",
+    "vote_average": 7.6,
+    "media_type": "movie",
+    "genre": "Drama",
+    "runtime": 29
+  },
+  {
+    "id": 59424,
+    "title": "Sonny Boy",
+    "year": "2021",
+    "poster_path": "/dGv3oVnO03RoCLSCt4DVThbpO5q.jpg",
+    "overview": "Waldemar Nods, a young man from Suriname, meets the older Dutch woman Rika van der Lans and they fall in love. In pre-WWII Netherlands they could not be more different. The one black, the other white, 17 years between them and on top of that Rika already has four children with another man. They love each other, but then Rika appears to be pregnant.",
+    "vote_average": 6.5,
+    "media_type": "movie",
+    "genre": "Drama",
+    "runtime": 130
+  },
+  {
+    "id": 784047,
+    "title": "Creating The Queen's Gambit",
+    "year": "2020",
+    "poster_path": "/gKxPyeItCrOscP8On4y5sG3WY9A.jpg",
+    "overview": "A fascinating character. Exquisite sets. A wig for every era. The stars, creators and crew reveal how the hit series about a chess prodigy came to life.",
+    "vote_average": 7.9,
+    "media_type": "movie",
+    "genre": "Documentary",
+    "runtime": 14
+  },
+  {
+    "id": 608658,
+    "title": "Oprah Winfrey Presents: When They See Us Now",
+    "year": "2019",
+    "poster_path": "/SttcgfmWLYTKUV7xd34d6l36CO.jpg",
+    "overview": "Oprah Winfrey talks with the exonerated men once known as the Central Park Five, plus the cast and producers who tell their story in \"When They See Us.\"",
+    "vote_average": 7.685,
+    "media_type": "movie",
+    "genre": "Documentary",
+    "runtime": 61
+  },
+  {
+    "id": 685727,
+    "title": "The Young Pope - A Tale of Filmmaking",
+    "year": "2016",
+    "poster_path": "/lTqcZpoGMeNiy4uF8eiu3a7RM6L.jpg",
+    "overview": "The documentary film that follows the production of the TV series “The Young Pope” by Paolo Sorrentino produced by HBO, Sky, Canal + and Wildside. Nastro d’Argento 2017 – Silver Ribbon Italian Film Critics Award: Nomination for Best Documentary.",
+    "vote_average": 7.7,
+    "media_type": "movie",
+    "genre": "Documentary",
+    "runtime": 57
+  },
+  {
+    "id": 917496,
+    "title": "Beetlejuice Beetlejuice",
+    "year": "2024",
+    "poster_path": "/kKgQzkUCnQmeTPkyIwHly2t6ZFI.jpg",
+    "overview": "After a family tragedy, three generations of the Deetz family return home to Winter River. Still haunted by Betelgeuse, Lydia's life is turned upside down when her teenage daughter, Astrid, accidentally opens the portal to the Afterlife.",
+    "vote_average": 6.907,
+    "media_type": "movie",
+    "genre": "Comedy",
+    "runtime": 105
+  },
+  {
+    "id": 10688,
+    "title": "Hamlet",
+    "year": "2000",
+    "poster_path": "/yL1rYMHlqZtZVESxEWLsaneXq86.jpg",
+    "overview": "Modern day adaptation of Shakespeare's immortal story about Hamlet's plight to avenge his father's murder in New York City.",
+    "vote_average": 5.827,
+    "media_type": "movie",
+    "genre": "Drama",
+    "runtime": 112
+  },
+  {
+    "id": 109,
+    "title": "Three Colors: White",
+    "year": "1994",
+    "poster_path": "/fdIet3NSa27gobMbaUml66oCQNT.jpg",
+    "overview": "Polish immigrant Karol Karol finds himself out of a marriage, a job and a country when his French wife, Dominique, divorces him after six months due to his impotence. Forced to leave France after losing the business they jointly owned, Karol enlists fellow Polish expatriate Mikołaj to smuggle him back to their homeland.",
+    "vote_average": 7.427,
+    "media_type": "movie",
+    "genre": "Comedy",
+    "runtime": 92
+  },
+  {
+    "id": 1284460,
+    "title": "Alpha",
+    "year": "2025",
+    "poster_path": "/oUZlrGPTAtinic87FF7jIT6EHmN.jpg",
+    "overview": "Alpha, a troubled 13-year-old lives with her single mom. Their world collapses the day she returns from school with a tattoo on her arm.",
+    "vote_average": 6.129,
+    "media_type": "movie",
+    "genre": "Horror",
+    "runtime": 128
+  },
+  {
+    "id": 764,
+    "title": "The Evil Dead",
+    "year": "1981",
+    "poster_path": "/54C1qdaiSijIU5NeNb4WsPJdNkG.jpg",
+    "overview": "In 1979, a group of college students find a Sumerian Book of the Dead in an old wilderness cabin they've rented for a weekend getaway.",
+    "vote_average": 7.26,
+    "media_type": "movie",
+    "genre": "Horror",
+    "runtime": 85
+  },
+  {
+    "id": 394385,
+    "title": "Rainer Werner Fassbinder's World on a Wire: Looking Ahead to Today",
+    "year": "1973",
+    "poster_path": "/qxu1vtzTKFF7d0lf28Hs7E3b93H.jpg",
+    "overview": "A retrospective look at the making of \"World on a Wire\".",
+    "vote_average": 6.2,
+    "media_type": "movie",
+    "genre": "Documentary",
+    "runtime": 51
+  },
+  {
+    "id": 1302690,
+    "title": "Princess Mononoke: Making of a Masterpiece",
+    "year": "2007",
+    "poster_path": "/d4NaGE6rXBlQG6aT9Z7XqSTBBVh.jpg",
+    "overview": "Making of princess mononoke",
+    "vote_average": 7,
+    "media_type": "movie",
+    "genre": "Documentary",
+    "runtime": 58
+  },
+  {
+    "id": 1591675,
+    "title": "Look Back",
+    "year": "2026",
+    "poster_path": "/sxiJhMNTBRvQgMnB9H4VIVdQfW9.jpg",
+    "overview": "Popular, outgoing Fujino is celebrated by her classmates for her funny comics in the class newspaper. One day, her teacher asks her to share the space with Kyomoto, a truant recluse whose beautiful artwork sparks a competitive fervor in Fujino. What starts as jealousy transforms when Fujino realizes their shared passion for drawing.",
+    "vote_average": 8,
+    "media_type": "movie",
+    "genre": "Drama",
+    "runtime": 100
+  },
+  {
+    "id": 51739,
+    "title": "Arrietty",
+    "year": "2010",
+    "poster_path": "/3lSRaSjDp2nkXMQkzzjpRi3035O.jpg",
+    "overview": "14-year-old Arrietty and the rest of the Clock family live in peaceful anonymity as they make their own home from items \"borrowed\" from the house's human inhabitants. However, life changes for the Clocks when a human boy discovers Arrietty.",
+    "vote_average": 7.687,
+    "media_type": "movie",
+    "genre": "Fantasy",
+    "runtime": 95
+  },
+  {
+    "id": 69011,
+    "title": "Wicked City",
+    "year": "1992",
+    "poster_path": "/560uq9mziscCktjYGYBc24q9z44.jpg",
+    "overview": "A peace treaty between the Earth and the Black World, a parallel universe of demons, is coming to an end. Two cops, Taki, a human male, and Maki, a female demon, are assigned to protect a diplomat who will help secure another treaty. A radical group of demons from the Black World are out to assassinate the diplomat and prevent the treaty; only the bond that forms between the two cops can save the Earth from destruction.",
+    "vote_average": 5.8,
+    "media_type": "movie",
+    "genre": "Action",
+    "runtime": 91
+  },
+  {
+    "id": 21959,
+    "title": "Mushi-Shi: The Movie",
+    "year": "2005",
+    "poster_path": "/ydEKy39NhjgVHF4hEcEEVo7FqXC.jpg",
+    "overview": "Mushi are beings in touch with the essence of life, far more basic and pure than normal living things. Most humans are incapable of perceiving Mushi and are oblivious to their existence, but there are a few who possess the ability to see and interact with Mushi. One such person is Ginko who travels from place to place to research Mushi and aid people suffering from problems caused by them.",
+    "vote_average": 6,
+    "media_type": "movie",
+    "genre": "Fantasy",
+    "runtime": 131
+  },
+  {
+    "id": 1720111,
+    "title": "Stage Play 『The Tatami Galaxy』",
+    "year": "2010",
+    "poster_path": "/qoREIUxLZ3pAdwDQMljY4b6TjFR.jpg",
+    "overview": "Stage play of the serie with the same name.",
+    "vote_average": 0,
+    "media_type": "movie",
+    "runtime": 140
+  },
+  {
+    "id": 1335757,
+    "title": "The Making of 'Band of Brothers'",
+    "year": "2001",
+    "poster_path": "/u9C6q5DXJRxmkEt81FaRVuhgzfF.jpg",
+    "overview": "Interviews made of the various actors and cast members that provide the knowledge and production skills and sets required to make the film a success.",
+    "vote_average": 7,
+    "media_type": "movie",
+    "genre": "Documentary",
+    "runtime": 30
+  },
+  {
+    "id": 10973,
+    "title": "Creature from the Black Lagoon",
+    "year": "2006",
+    "poster_path": "/euCzA2Exc70MpTDCVYih8tdE7z1.jpg",
+    "overview": "When scientists exploring the Amazon River stumble on a “missing link” connecting humans and fish, they plan to capture it for later study. But the Creature has plans of his own, and has set his sights on the lead scientist's beautiful fiancée, Kay.",
+    "vote_average": 6.81,
+    "media_type": "movie",
+    "genre": "Adventure",
+    "runtime": 79
+  },
+  {
+    "id": 869886,
+    "title": "A Man",
+    "year": "2022",
+    "poster_path": "/28BHeDbC0307Gzt467XLdVNJuag.jpg",
+    "overview": "Akira works as a lawyer. One day, he meets with his former client Rie, who asks Akira to perform a background check on her late husband Daisuke.",
+    "vote_average": 7.127,
+    "media_type": "movie",
+    "genre": "Drama",
+    "runtime": 121
+  },
+  {
+    "id": 1790203,
+    "title": "Over the Garden Wall",
+    "year": "2014",
+    "poster_path": "/BriYcU2GiLiAs1369x7lk53AWq.jpg",
+    "overview": "",
+    "vote_average": 9,
+    "media_type": "movie"
+  },
+  {
+    "id": 1319558,
+    "title": "In the Realm of Ripley",
+    "year": "2024",
+    "poster_path": "/psJm3haNg6kBpGxfQ1rxckpfF74.jpg",
+    "overview": "",
+    "vote_average": 8.5,
+    "media_type": "movie",
+    "genre": "Thriller"
+  },
+  {
+    "id": 320006,
+    "title": "Taxi",
+    "year": "2015",
+    "poster_path": "/lY2RW6pxRYyPmrgUF0rjqbeAnTu.jpg",
+    "overview": "A yellow cab is driving through the vibrant and colourful streets of Tehran. Very diverse passengers enter the taxi, each candidly expressing their views while being interviewed by the driver who is no one else but the director Jafar Panahi himself. His camera placed on the dashboard of his mobile film studio captures the spirit of Iranian society through this comedic and dramatic drive…",
+    "vote_average": 7.04,
+    "media_type": "movie",
+    "genre": "Comedy",
+    "runtime": 81
+  },
+  {
+    "id": 9702,
+    "title": "Bound by Honor",
+    "year": "1993",
+    "poster_path": "/8t9ojZ7fyn5iTqKCVjGvJ6nMacN.jpg",
+    "overview": "Based on the true life experiences of poet Jimmy Santiago Baca, the film focuses on half-brothers Paco and Cruz, and their bi-racial cousin Miklo. It opens in 1972, as the three are members of an East L.A. gang known as the \"Vatos Locos\", and the story focuses on how a violent crime and the influence of narcotics alter their lives. Miklo is incarcerated and sent to San Quentin, where he makes a \"home\" for himself. Cruz becomes an exceptional artist, but a heroin addiction overcomes him with tragic results. Paco becomes a cop and an enemy to his \"carnal\", Miklo.",
+    "vote_average": 8.237,
+    "media_type": "movie",
+    "genre": "Crime",
+    "runtime": 190
+  },
+  {
+    "id": 1677172,
+    "title": "Paranoia Agent: Part 1",
+    "year": "2004",
+    "poster_path": "/3pDsE7HNa0Nb5TbM1Tv87dLCJxq.jpg",
+    "overview": "Paranoia Agent is a Japanese anime television series created by director Satoshi Kon and produced by Madhouse about a social phenomenon in Musashino, Tokyo caused by a juvenile serial assailant named Lil' Slugger (the English equivalent to Shōnen Bat, which translates to \"Bat Boy\"). The plot relays between a large cast of people affected in some way by the phenomenon; usually Lil' Slugger's victims or the detectives assigned to apprehend him. As each character becomes the focus of the story, details are revealed about their secret lives and the truth about Lil' Slugger.",
+    "vote_average": 5,
+    "media_type": "movie",
+    "genre": "Animation",
+    "runtime": 172
+  },
+  {
+    "id": 37058,
+    "title": "I'm Here",
+    "year": "2010",
+    "poster_path": "/1jq9zUwPIFGid3BMrLLcm3YY2nY.jpg",
+    "overview": "A library assistant plods through an ordinary life in LA until a chance meeting opens his eyes to the power of creativity and ultimately, love. When this new life and love begin to fall apart, he discovers he has a lot to give. This short film proves that ordinary is no place to be.",
+    "vote_average": 7.193,
+    "media_type": "movie",
+    "genre": "Romance",
+    "runtime": 32
+  },
+  {
+    "id": 661374,
+    "title": "Glass Onion: A Knives Out Mystery",
+    "year": "2022",
+    "poster_path": "/vDGr1YdrlfbU9wxTOdpf3zChmv9.jpg",
+    "overview": "World-famous detective Benoit Blanc heads to Greece to peel back the layers of a mystery surrounding a tech billionaire and his eclectic crew of friends.",
+    "vote_average": 7.014,
+    "media_type": "movie",
+    "genre": "Comedy",
+    "runtime": 140
+  },
+  {
+    "id": 361292,
+    "title": "Suspiria",
+    "year": "2018",
+    "poster_path": "/bRpKFPb8CWKRQxVo9NzOuPPlO3Q.jpg",
+    "overview": "A darkness swirls at the center of a world-renowned dance company, one that will engulf the artistic director, an ambitious young dancer, and a grieving psychotherapist. Some will succumb to the nightmare. Others will finally wake up.",
+    "vote_average": 6.882,
+    "media_type": "movie",
+    "genre": "Horror",
+    "runtime": 152
+  },
+  {
+    "id": 504949,
+    "title": "The King",
+    "year": "2019",
+    "poster_path": "/8u0QBGUbZcBW59VEAdmeFl9g98N.jpg",
+    "overview": "England, 15th century. Hal, a capricious prince who lives among the populace far from court, is forced by circumstances to reluctantly accept the throne and become Henry V.",
+    "vote_average": 7.162,
+    "media_type": "movie",
+    "genre": "Drama",
+    "runtime": 140
+  },
+  {
+    "id": 965982,
+    "title": "Normal Porn for Normal People",
+    "year": "2020",
+    "poster_path": "/fInotL9UO1AZaup34p5RxzEh4SJ.jpg",
+    "overview": "\"Normal Porn for Normal People\" is an appropriated media piece that explores our societal need to consume violence for entertainment. The film offers a satirical commentary on the romanticizing and normalization of violent imagery, while observing the link to commercial consumerism that exploits human sexuality, while simultaneously demonizing it. Interview segments echo our endless need to devour salacious content by venerating both real and fictional violence. Sexuality and sexual images remain a convenient scapegoat that facilitate a continued avoidance regarding the impact that the glorification of violence has within American culture.",
+    "vote_average": 8,
+    "media_type": "movie",
+    "genre": "Horror",
+    "runtime": 4
+  },
+  {
+    "id": 292431,
+    "title": "Love",
+    "year": "2015",
+    "poster_path": "/yz6lmOmsmYuj6AOLG4LIwK5eJZF.jpg",
+    "overview": "Murphy is an American living in Paris who enters a highly sexually and emotionally charged relationship with the unstable Electra. Unaware of the seismic effect it will have on their relationship, they invite their pretty neighbor into their bed.",
+    "vote_average": 6.463,
+    "media_type": "movie",
+    "genre": "Drama",
+    "runtime": 134
+  },
+  {
+    "id": 1280498,
+    "title": "What If Shogun Ieyasu Tokugawa Was to Become the Prime Minister",
+    "year": "2024",
+    "poster_path": "/1ECgLX6i4rOoyx5lvjtDE5EI6wo.jpg",
+    "overview": "In the year 2020, when Covid-19 is rapidly spreading around the world, chaos ensues and people's daily lives are completely upended. A virus outbreak suddenly occurs at the prime minister's office in Japan. This leads to the prime minister's sudden death. The Japanese government then puts in place an unprecedented plan, which is to bring back the greatest leaders from Japan's past through AI holograms and form a super cabinet with them. These famous individuals include Ieyasu Tokugawa, Ryoma Sakamoto, Nobunaga Oda, and Hideyoshi Toyotomi. People are stunned and at the same time go crazy over the endless execution of policies by this new legendary cabinet. Risa Nishimura wants to become an announcer and currently works as a TV reporter for a broadcasting station. She approaches a government spokesperson, Ryoma Sakamoto, for an exclusive scoop. Due to an unexpected case, she realizes that something is going on behind this cabinet.",
+    "vote_average": 5.3,
+    "media_type": "movie",
+    "genre": "Drama",
+    "runtime": 110
+  },
+  {
+    "id": 426518,
+    "title": "Gunbuster: The Movie",
+    "year": "1988",
+    "poster_path": "/pCAVPmDDvtdqKmzzQ1Bq7vVjQtH.jpg",
+    "overview": "Noriko Takaya's dream is to become a space pilot like her father, who died when she was young after an attack by alien forces in deep space. After entering Okinawa Girls Space Pilot High School, she must persuade everyone, especially herself, that she can fulfill her goal and become an accomplished pilot despite being just an ordinary girl.",
+    "vote_average": 7.2,
+    "media_type": "movie",
+    "genre": "Animation",
+    "runtime": 95
+  },
+  {
+    "id": 110,
+    "title": "Three Colors: Red",
+    "year": "1994",
+    "poster_path": "/JHmsBiX1tjCKqAul1lzC20WcAW.jpg",
+    "overview": "Part-time model Valentine unexpectedly befriends a retired judge after she runs over his dog. At first, the grumpy man shows no concern about the dog, and Valentine decides to keep it. But the two form a bond when she returns to his house and catches him listening to his neighbors’ phone calls.",
+    "vote_average": 7.88,
+    "media_type": "movie",
+    "genre": "Drama",
+    "runtime": 100
+  },
+  {
+    "id": 108,
+    "title": "Three Colors: Blue",
+    "year": "1993",
+    "poster_path": "/33wsWxzsNstI8N7dvuwzFmj1qBd.jpg",
+    "overview": "The wife of a famous composer survives a car accident that kills her husband and daughter. Now alone, she shakes off her old identity and explores her newfound freedom but finds that she is unbreakably bound to other humans, including her husband’s mistress, whose existence she never suspected.",
+    "vote_average": 7.609,
+    "media_type": "movie",
+    "genre": "Drama",
+    "runtime": 98
+  },
+  {
+    "id": 632458,
+    "title": "FLCL Progressive",
+    "year": "2000",
+    "poster_path": "/788yb9ecJ4Yp9QyW1bRrDKAuJTb.jpg",
+    "overview": "Hidomi Hibajiri is a young girl who never takes off her headphones. Her whole life consists of going to school, helping out at her mother's cafe, and listening to music. With nothing else to break the crippling monotony, she keeps her headphones on at all times. That is, until she is run over by a mysterious guitar-wielding woman.",
+    "vote_average": 5.4,
+    "media_type": "movie",
+    "genre": "Action",
+    "runtime": 132
+  },
+  {
+    "id": 33441,
+    "title": "Robot Carnival",
+    "year": "1987",
+    "poster_path": "/2DTREQNErBYtZd1isRqdqNbbXA8.jpg",
+    "overview": "An anthology of various tales told in various styles with robots being the one common element among them.",
+    "vote_average": 6.7,
+    "media_type": "movie",
+    "genre": "Animation",
+    "runtime": 93
+  },
+  {
+    "id": 812583,
+    "title": "Wake Up Dead Man: A Knives Out Mystery",
+    "year": "2025",
+    "poster_path": "/iV9LM8aUb83BjCCx2RUnKE5sSQg.jpg",
+    "overview": "When young priest Jud Duplenticy is sent to assist charismatic firebrand Monsignor Jefferson Wicks, it’s clear that all is not well in the pews. After a sudden and seemingly impossible murder rocks the town, the lack of an obvious suspect prompts local police chief Geraldine Scott to join forces with renowned detective Benoit Blanc to unravel a mystery that defies all logic.",
+    "vote_average": 7.212,
+    "media_type": "movie",
+    "genre": "Thriller",
+    "runtime": 145
+  },
+  {
+    "id": 53023,
+    "title": "Happiness",
+    "year": "1965",
+    "poster_path": "/1mNJ4PFyECg2j09upmzcspZypFd.jpg",
+    "overview": "Though married to the good-natured, beautiful Thérèse, young husband and father François finds himself falling unquestioningly into an affair with an attractive postal worker.",
+    "vote_average": 7.452,
+    "media_type": "movie",
+    "genre": "Drama",
+    "runtime": 80
+  },
+  {
+    "id": 1019939,
+    "title": "Hundreds of Beavers",
+    "year": "2022",
+    "poster_path": "/jBg64OA2QEWL0zaOFMoAGipeGjJ.jpg",
+    "overview": "In the 19th century, a drunken applejack salesman must go from zero to hero and become North America's greatest fur trapper by defeating hundreds of beavers.",
+    "vote_average": 7.266,
+    "media_type": "movie",
+    "genre": "Comedy",
+    "runtime": 108
+  },
+  {
     "id": 65592,
     "title": "Princes and Princesses",
     "year": "2000",
@@ -198,17 +708,6 @@
     "runtime": 17
   },
   {
-    "id": 25189,
-    "title": "The Mirror Has Two Faces",
-    "year": "1996",
-    "poster_path": "/ekk8MKMp3tlJjcMuhOgKsMCRrvR.jpg",
-    "overview": "Rose Morgan, who still lives with her mother, is a professor of Romantic Literature who desperately longs for passion in her life. Gregory Larkin, a mathematics professor, has been burned by passionate relationships and longs for a sexless union based on friendship and respect.",
-    "vote_average": 6.7,
-    "media_type": "movie",
-    "genre": "Comedy",
-    "runtime": 126
-  },
-  {
     "id": 6396,
     "title": "SLC Punk",
     "year": "1998",
@@ -251,27 +750,6 @@
     "media_type": "movie",
     "genre": "Comedy",
     "runtime": 106
-  },
-  {
-    "id": 1256221,
-    "title": "Samuel: Hollywood vs Hollywood",
-    "year": "2024",
-    "poster_path": "/canCdj3s7ZgxmeLhxdCtPUDc80a.jpg",
-    "overview": "The epic story of a great man of cinema, Samuel Bronston, as recounted by those who knew him. Bronston created a parallel Hollywood in Spain that was much larger than the one in California, and this provoked the wrath of an industry that ultimately devoured him.",
-    "vote_average": 0,
-    "media_type": "movie",
-    "genre": "Documentary"
-  },
-  {
-    "id": 1086497,
-    "title": "The Penguin Lessons",
-    "year": "2025",
-    "poster_path": "/pJUfkCcU5mCEMF8O0LKvlMnYAfD.jpg",
-    "overview": "In 1976, as Argentina descends into violence and chaos, a world-weary English teacher regains his compassion for others thanks to an unlikely friendship with a penguin.",
-    "vote_average": 7.086,
-    "media_type": "movie",
-    "genre": "Drama",
-    "runtime": 111
   },
   {
     "id": 863,
@@ -384,17 +862,6 @@
     "runtime": 173
   },
   {
-    "id": 268531,
-    "title": "Captain Underpants: The First Epic Movie",
-    "year": "2017",
-    "poster_path": "/vKSmaPct5OEeMoD8ue30RisHlKD.jpg",
-    "overview": "Based on the bestselling book series, this outrageous comedy tells the story of George and Harold,  two overly imaginative pranksters who hypnotize their principal into thinking he’s an enthusiastic, yet dimwitted, superhero named Captain Underpants.",
-    "vote_average": 6.313,
-    "media_type": "movie",
-    "genre": "Family",
-    "runtime": 89
-  },
-  {
     "id": 1024541,
     "title": "The Teacher Who Promised the Sea",
     "year": "2023",
@@ -426,17 +893,6 @@
     "media_type": "movie",
     "genre": "Action",
     "runtime": 97
-  },
-  {
-    "id": 497603,
-    "title": "A Bloody Finger in Your Mouth",
-    "year": "2017",
-    "poster_path": "/uzrVFq6w4dUXbSwqphoBVwaKt7j.jpg",
-    "overview": "A short documentary about the making of Twin Peaks: The Return. This time focused in the planing and technical execution of some particular scenes.",
-    "vote_average": 6,
-    "media_type": "movie",
-    "genre": "Documentary",
-    "runtime": 27
   },
   {
     "id": 10778,
@@ -527,17 +983,6 @@
     "runtime": 139
   },
   {
-    "id": 51859,
-    "title": "Trigun: Badlands Rumble",
-    "year": "2010",
-    "poster_path": "/7JYK0FBs2nX6ikqeT6rDzEZRM.jpg",
-    "overview": "In a quicksand surrounded town called Makka, rumors spread of a legendary robber named Gasback is after the town. To protect it, Mayor Kepler has hired bounty hunters. These hunters have been following Gasback from town to town in hopes of getting the bounty. Vash the Stampede is in town, along with Meryl and Milly, along with the female bounty hunter Amelia and Nicholas D. Wolfwood.",
-    "vote_average": 7.479,
-    "media_type": "movie",
-    "genre": "Action",
-    "runtime": 91
-  },
-  {
     "id": 225180,
     "title": "BLUE EYE SAMURAI",
     "year": "2023",
@@ -546,17 +991,6 @@
     "vote_average": 8.497,
     "media_type": "tv",
     "genre": "Action & Adventure"
-  },
-  {
-    "id": 489092,
-    "title": "Revolutionary Girl Utena: The Musical Comedy",
-    "year": "1997",
-    "poster_path": "/sKO6o2rv1zAtW3bPgc4eEDwI1cN.jpg",
-    "overview": "A musical theater show based on the manga \"Revolutionary Girl Utena\"",
-    "vote_average": 7,
-    "media_type": "movie",
-    "genre": "Music",
-    "runtime": 60
   },
   {
     "id": 29657,
@@ -579,17 +1013,6 @@
     "media_type": "movie",
     "genre": "Drama",
     "runtime": 135
-  },
-  {
-    "id": 833013,
-    "title": "Kino's Journey: Country of Illness -For You-",
-    "year": "2007",
-    "poster_path": "/xgEKfldUm15WR9IKR4870SE86Ib.jpg",
-    "overview": "Kino, a traveler who journeys the world with his talking motorcycle, Hermes, arrives in a country where people live inside massive domes. There, she meets a girl named Inertia, who asks him to deliver a letter to her pen pal—a boy who lives outside the dome.",
-    "vote_average": 8,
-    "media_type": "movie",
-    "genre": "Animation",
-    "runtime": 30
   },
   {
     "id": 558,
@@ -900,17 +1323,6 @@
     "runtime": 89
   },
   {
-    "id": 59424,
-    "title": "Sonny Boy",
-    "year": "2011",
-    "poster_path": "/dGv3oVnO03RoCLSCt4DVThbpO5q.jpg",
-    "overview": "Waldemar Nods, a young man from Suriname, meets the older Dutch woman Rika van der Lans and they fall in love. In pre-WWII Netherlands they could not be more different. The one black, the other white, 17 years between them and on top of that Rika already has four children with another man. They love each other, but then Rika appears to be pregnant.",
-    "vote_average": 6.5,
-    "media_type": "movie",
-    "genre": "Drama",
-    "runtime": 130
-  },
-  {
     "id": 258216,
     "title": "Nymphomaniac: Vol. I",
     "year": "2013",
@@ -1109,17 +1521,6 @@
     "runtime": 169
   },
   {
-    "id": 784047,
-    "title": "Creating The Queen's Gambit",
-    "year": "2021",
-    "poster_path": "/gKxPyeItCrOscP8On4y5sG3WY9A.jpg",
-    "overview": "A fascinating character. Exquisite sets. A wig for every era. The stars, creators and crew reveal how the hit series about a chess prodigy came to life.",
-    "vote_average": 7.9,
-    "media_type": "movie",
-    "genre": "Documentary",
-    "runtime": 14
-  },
-  {
     "id": 1205515,
     "title": "Sorry, Baby",
     "year": "2025",
@@ -1283,17 +1684,6 @@
     "media_type": "movie",
     "genre": "Drama",
     "runtime": 118
-  },
-  {
-    "id": 608658,
-    "title": "Oprah Winfrey Presents: When They See Us Now",
-    "year": "2019",
-    "poster_path": "/SttcgfmWLYTKUV7xd34d6l36CO.jpg",
-    "overview": "Oprah Winfrey talks with the exonerated men once known as the Central Park Five, plus the cast and producers who tell their story in \"When They See Us.\"",
-    "vote_average": 7.685,
-    "media_type": "movie",
-    "genre": "Documentary",
-    "runtime": 61
   },
   {
     "id": 1380316,
@@ -1647,17 +2037,6 @@
     "runtime": 118
   },
   {
-    "id": 685727,
-    "title": "The Young Pope - A Tale of Filmmaking",
-    "year": "2016",
-    "poster_path": "/lTqcZpoGMeNiy4uF8eiu3a7RM6L.jpg",
-    "overview": "The documentary film that follows the production of the TV series “The Young Pope” by Paolo Sorrentino produced by HBO, Sky, Canal + and Wildside. Nastro d’Argento 2017 – Silver Ribbon Italian Film Critics Award: Nomination for Best Documentary.",
-    "vote_average": 7.7,
-    "media_type": "movie",
-    "genre": "Documentary",
-    "runtime": 57
-  },
-  {
     "id": 11554,
     "title": "Three Times",
     "year": "2005",
@@ -1700,17 +2079,6 @@
     "media_type": "movie",
     "genre": "Mystery",
     "runtime": 103
-  },
-  {
-    "id": 4011,
-    "title": "Beetlejuice",
-    "year": "1988",
-    "poster_path": "/nnl6OWkyPpuMm595hmAxNW3rZFn.jpg",
-    "overview": "A newly dead New England couple seeks help from a deranged demon exorcist to scare an affluent New York family out of their home.",
-    "vote_average": 7.367,
-    "media_type": "movie",
-    "genre": "Fantasy",
-    "runtime": 92
   },
   {
     "id": 37585,
@@ -1889,17 +2257,6 @@
     "runtime": 103
   },
   {
-    "id": 10264,
-    "title": "Hamlet",
-    "year": "1990",
-    "poster_path": "/cB5HbaiFoQLLmGeN2eeJjBGrp8U.jpg",
-    "overview": "Hamlet, Prince of Denmark, finds out that his uncle Claudius killed his father to obtain the throne, and plans revenge.",
-    "vote_average": 6.598,
-    "media_type": "movie",
-    "genre": "Drama",
-    "runtime": 130
-  },
-  {
     "id": 11314,
     "title": "Koyaanisqatsi",
     "year": "1983",
@@ -1909,17 +2266,6 @@
     "media_type": "movie",
     "genre": "Documentary",
     "runtime": 86
-  },
-  {
-    "id": 109,
-    "title": "Three Colors: White",
-    "year": "1994",
-    "poster_path": "/fdIet3NSa27gobMbaUml66oCQNT.jpg",
-    "overview": "Polish immigrant Karol Karol finds himself out of a marriage, a job and a country when his French wife, Dominique, divorces him after six months due to his impotence. Forced to leave France after losing the business they jointly owned, Karol enlists fellow Polish expatriate Mikołaj to smuggle him back to their homeland.",
-    "vote_average": 7.427,
-    "media_type": "movie",
-    "genre": "Comedy",
-    "runtime": 92
   },
   {
     "id": 2295,
@@ -1963,17 +2309,6 @@
     "vote_average": 7.6,
     "media_type": "movie",
     "genre": "Drama",
-    "runtime": 97
-  },
-  {
-    "id": 399360,
-    "title": "Alpha",
-    "year": "2018",
-    "poster_path": "/afdZAIcAQscziqVtsEoh2PwsYTW.jpg",
-    "overview": "In the prehistoric past, Keda, a young and inexperienced hunter, struggles to return home after being separated from his tribe when bison hunting goes awry. On his way back he will find an unexpected ally.",
-    "vote_average": 6.572,
-    "media_type": "movie",
-    "genre": "Adventure",
     "runtime": 97
   },
   {
@@ -2604,17 +2939,6 @@
     "runtime": 77
   },
   {
-    "id": 764,
-    "title": "The Evil Dead",
-    "year": "1983",
-    "poster_path": "/54C1qdaiSijIU5NeNb4WsPJdNkG.jpg",
-    "overview": "In 1979, a group of college students find a Sumerian Book of the Dead in an old wilderness cabin they've rented for a weekend getaway.",
-    "vote_average": 7.261,
-    "media_type": "movie",
-    "genre": "Horror",
-    "runtime": 85
-  },
-  {
     "id": 659,
     "title": "The Tin Drum",
     "year": "1979",
@@ -2624,17 +2948,6 @@
     "media_type": "movie",
     "genre": "Drama",
     "runtime": 162
-  },
-  {
-    "id": 394385,
-    "title": "Rainer Werner Fassbinder's World on a Wire: Looking Ahead to Today",
-    "year": "2010",
-    "poster_path": "/qxu1vtzTKFF7d0lf28Hs7E3b93H.jpg",
-    "overview": "A retrospective look at the making of \"World on a Wire\".",
-    "vote_average": 6.2,
-    "media_type": "movie",
-    "genre": "Documentary",
-    "runtime": 51
   },
   {
     "id": 371645,
@@ -2843,17 +3156,6 @@
     "media_type": "movie",
     "genre": "Documentary",
     "runtime": 110
-  },
-  {
-    "id": 128,
-    "title": "Princess Mononoke",
-    "year": "1997",
-    "poster_path": "/cMYCDADoLKLbB83g4WnJegaZimC.jpg",
-    "overview": "Ashitaka, a prince of the disappearing Emishi people, is cursed by a demonized boar god and must journey to the west to find a cure. Along the way, he encounters San, a young human woman fighting to protect the forest, and Lady Eboshi, who is trying to destroy it. Ashitaka must find a way to bring balance to this conflict.",
-    "vote_average": 8.322,
-    "media_type": "movie",
-    "genre": "Adventure",
-    "runtime": 134
   },
   {
     "id": 1394,
@@ -3626,17 +3928,6 @@
     "runtime": 238
   },
   {
-    "id": 1244492,
-    "title": "Look Back",
-    "year": "2024",
-    "poster_path": "/4f2EcNkp1Mvp9wE5w7HKxcmACWg.jpg",
-    "overview": "Popular, outgoing Fujino is celebrated by her classmates for her funny comics in the class newspaper. One day, her teacher asks her to share the space with Kyomoto, a truant recluse whose beautiful artwork sparks a competitive fervor in Fujino. What starts as jealousy transforms when Fujino realizes their shared passion for drawing.",
-    "vote_average": 8.194,
-    "media_type": "movie",
-    "genre": "Animation",
-    "runtime": 58
-  },
-  {
     "id": 1484090,
     "title": "Furies",
     "year": "2026",
@@ -4044,17 +4335,6 @@
     "runtime": 109
   },
   {
-    "id": 51739,
-    "title": "Arrietty",
-    "year": "2010",
-    "poster_path": "/3lSRaSjDp2nkXMQkzzjpRi3035O.jpg",
-    "overview": "14-year-old Arrietty and the rest of the Clock family live in peaceful anonymity as they make their own home from items \"borrowed\" from the house's human inhabitants. However, life changes for the Clocks when a human boy discovers Arrietty.",
-    "vote_average": 7.687,
-    "media_type": "movie",
-    "genre": "Fantasy",
-    "runtime": 95
-  },
-  {
     "id": 293660,
     "title": "Deadpool",
     "year": "2016",
@@ -4174,17 +4454,6 @@
     "media_type": "movie",
     "genre": "Drama",
     "runtime": 113
-  },
-  {
-    "id": 69011,
-    "title": "Wicked City",
-    "year": "1992",
-    "poster_path": "/560uq9mziscCktjYGYBc24q9z44.jpg",
-    "overview": "A peace treaty between the Earth and the Black World, a parallel universe of demons, is coming to an end. Two cops, Taki, a human male, and Maki, a female demon, are assigned to protect a diplomat who will help secure another treaty. A radical group of demons from the Black World are out to assassinate the diplomat and prevent the treaty; only the bond that forms between the two cops can save the Earth from destruction.",
-    "vote_average": 5.8,
-    "media_type": "movie",
-    "genre": "Action",
-    "runtime": 91
   },
   {
     "id": 18311,
@@ -4361,49 +4630,6 @@
     "media_type": "movie",
     "genre": "Crime",
     "runtime": 122
-  },
-  {
-    "id": 21959,
-    "title": "Mushi-Shi: The Movie",
-    "year": "2007",
-    "poster_path": "/ydEKy39NhjgVHF4hEcEEVo7FqXC.jpg",
-    "overview": "Mushi are beings in touch with the essence of life, far more basic and pure than normal living things. Most humans are incapable of perceiving Mushi and are oblivious to their existence, but there are a few who possess the ability to see and interact with Mushi. One such person is Ginko who travels from place to place to research Mushi and aid people suffering from problems caused by them.",
-    "vote_average": 6,
-    "media_type": "movie",
-    "genre": "Fantasy",
-    "runtime": 131
-  },
-  {
-    "id": 1720111,
-    "title": "Stage Play 『The Tatami Galaxy』",
-    "year": "2026",
-    "poster_path": "/qoREIUxLZ3pAdwDQMljY4b6TjFR.jpg",
-    "overview": "Stage play of the serie with the same name.",
-    "vote_average": 0,
-    "media_type": "movie",
-    "runtime": 140
-  },
-  {
-    "id": 1335757,
-    "title": "The Making of 'Band of Brothers'",
-    "year": "2001",
-    "poster_path": "/u9C6q5DXJRxmkEt81FaRVuhgzfF.jpg",
-    "overview": "Interviews made of the various actors and cast members that provide the knowledge and production skills and sets required to make the film a success.",
-    "vote_average": 7,
-    "media_type": "movie",
-    "genre": "Documentary",
-    "runtime": 30
-  },
-  {
-    "id": 10973,
-    "title": "Creature from the Black Lagoon",
-    "year": "1954",
-    "poster_path": "/euCzA2Exc70MpTDCVYih8tdE7z1.jpg",
-    "overview": "When scientists exploring the Amazon River stumble on a “missing link” connecting humans and fish, they plan to capture it for later study. But the Creature has plans of his own, and has set his sights on the lead scientist's beautiful fiancée, Kay.",
-    "vote_average": 6.81,
-    "media_type": "movie",
-    "genre": "Adventure",
-    "runtime": 79
   },
   {
     "id": 475946,
@@ -4736,17 +4962,6 @@
     "runtime": 136
   },
   {
-    "id": 937278,
-    "title": "A Man Called Otto",
-    "year": "2022",
-    "poster_path": "/130H1gap9lFfiTF9iDrqNIkFvC9.jpg",
-    "overview": "When a lively young family moves in next door, grumpy widower Otto Anderson meets his match in a quick-witted, pregnant woman named Marisol, leading to an unlikely friendship that turns his world upside down.",
-    "vote_average": 7.738,
-    "media_type": "movie",
-    "genre": "Comedy",
-    "runtime": 126
-  },
-  {
     "id": 177945,
     "title": "Like Father, Like Son",
     "year": "2013",
@@ -4811,17 +5026,6 @@
     "media_type": "movie",
     "genre": "Drama",
     "runtime": 123
-  },
-  {
-    "id": 768900,
-    "title": "Over the Garden Wall",
-    "year": "1919",
-    "poster_path": "/uNd8daq7xpSo7GeXvAq04OY0xGr.jpg",
-    "overview": "Peggy ( Bessie Love ) and her sister Frances ( Myrtle Reeves ) live with their father, but because of his idleness, they must all move to humbler quarters. Peggy adapts quickly to their new surrounding, while Frances misses the social life she once enjoyed. Their neighbors are well off, and Peggy begins a romance with their son, whom she thinks is the chauffeur. Meanwhile, Frances has become involved with a roguish character and plans to elope with him. Peggy saves her sister from imminent disgrace, but comes close to compromising herself instead. Peggy's sweetheart comes to her rescue and now his true identity is revealed to the very grateful girl.",
-    "vote_average": 9,
-    "media_type": "movie",
-    "genre": "Romance",
-    "runtime": 50
   },
   {
     "id": 585,
@@ -4989,16 +5193,6 @@
     "runtime": 121
   },
   {
-    "id": 1319558,
-    "title": "In the Realm of Ripley",
-    "year": "2024",
-    "poster_path": "/psJm3haNg6kBpGxfQ1rxckpfF74.jpg",
-    "overview": "",
-    "vote_average": 8.5,
-    "media_type": "movie",
-    "genre": "Thriller"
-  },
-  {
     "id": 785084,
     "title": "The Whale",
     "year": "2022",
@@ -5074,17 +5268,6 @@
     "media_type": "movie",
     "genre": "Animation",
     "runtime": 109
-  },
-  {
-    "id": 103,
-    "title": "Taxi Driver",
-    "year": "1976",
-    "poster_path": "/ekstpH614fwDX8DUln1a2Opz0N8.jpg",
-    "overview": "Suffering from insomnia, disturbed loner Travis Bickle takes a job as a New York City cabbie, haunting the streets nightly, growing increasingly detached from reality as he dreams of cleaning up the filthy city.",
-    "vote_average": 8.115,
-    "media_type": "movie",
-    "genre": "Crime",
-    "runtime": 114
   },
   {
     "id": 14087,
@@ -5681,17 +5864,6 @@
     "runtime": 142
   },
   {
-    "id": 9702,
-    "title": "Bound by Honor",
-    "year": "1993",
-    "poster_path": "/8t9ojZ7fyn5iTqKCVjGvJ6nMacN.jpg",
-    "overview": "Based on the true life experiences of poet Jimmy Santiago Baca, the film focuses on half-brothers Paco and Cruz, and their bi-racial cousin Miklo. It opens in 1972, as the three are members of an East L.A. gang known as the \"Vatos Locos\", and the story focuses on how a violent crime and the influence of narcotics alter their lives. Miklo is incarcerated and sent to San Quentin, where he makes a \"home\" for himself. Cruz becomes an exceptional artist, but a heroin addiction overcomes him with tragic results. Paco becomes a cop and an enemy to his \"carnal\", Miklo.",
-    "vote_average": 8.237,
-    "media_type": "movie",
-    "genre": "Crime",
-    "runtime": 190
-  },
-  {
     "id": 508747,
     "title": "Us and Them",
     "year": "2018",
@@ -5954,17 +6126,6 @@
     "media_type": "movie",
     "genre": "Drama",
     "runtime": 125
-  },
-  {
-    "id": 1677172,
-    "title": "Paranoia Agent: Part 1",
-    "year": "2004",
-    "poster_path": "/3pDsE7HNa0Nb5TbM1Tv87dLCJxq.jpg",
-    "overview": "Paranoia Agent is a Japanese anime television series created by director Satoshi Kon and produced by Madhouse about a social phenomenon in Musashino, Tokyo caused by a juvenile serial assailant named Lil' Slugger (the English equivalent to Shōnen Bat, which translates to \"Bat Boy\"). The plot relays between a large cast of people affected in some way by the phenomenon; usually Lil' Slugger's victims or the detectives assigned to apprehend him. As each character becomes the focus of the story, details are revealed about their secret lives and the truth about Lil' Slugger.",
-    "vote_average": 5,
-    "media_type": "movie",
-    "genre": "Animation",
-    "runtime": 172
   },
   {
     "id": 4808,
@@ -6241,17 +6402,6 @@
     "runtime": 122
   },
   {
-    "id": 43939,
-    "title": "I'm Still Here",
-    "year": "2010",
-    "poster_path": "/h8c53OPv2miF6vzpVXQZX8jw1pJ.jpg",
-    "overview": "I'm Still Here is a portrayal of a tumultuous year in the life of actor Joaquin Phoenix. With remarkable access, the film follows the Oscar-nominee as he announces his retirement from a successful film career in the fall of 2008 and sets off to reinvent himself as a hip-hop musician. The film is a portrait of an artist at a crossroads and explores notions of courage and creative reinvention, as well as the ramifications of a life spent in the public eye.",
-    "vote_average": 5.9,
-    "media_type": "movie",
-    "genre": "Music",
-    "runtime": 107
-  },
-  {
     "id": 158,
     "title": "Knockin' on Heaven's Door",
     "year": "1997",
@@ -6316,17 +6466,6 @@
     "media_type": "movie",
     "genre": "Drama",
     "runtime": 107
-  },
-  {
-    "id": 661374,
-    "title": "Glass Onion: A Knives Out Mystery",
-    "year": "2022",
-    "poster_path": "/vDGr1YdrlfbU9wxTOdpf3zChmv9.jpg",
-    "overview": "World-famous detective Benoit Blanc heads to Greece to peel back the layers of a mystery surrounding a tech billionaire and his eclectic crew of friends.",
-    "vote_average": 7.014,
-    "media_type": "movie",
-    "genre": "Comedy",
-    "runtime": 140
   },
   {
     "id": 378,
@@ -6535,17 +6674,6 @@
     "media_type": "movie",
     "genre": "Drama",
     "runtime": 114
-  },
-  {
-    "id": 11906,
-    "title": "Suspiria",
-    "year": "1977",
-    "poster_path": "/f4EJQrq5bKCqJK6I5moST9kur2p.jpg",
-    "overview": "An American newcomer to a prestigious German ballet academy comes to realize that the school is a front for something sinister amid a series of grisly murders.",
-    "vote_average": 7.449,
-    "media_type": "movie",
-    "genre": "Horror",
-    "runtime": 99
   },
   {
     "id": 964960,
@@ -6878,17 +7006,6 @@
     "runtime": 158
   },
   {
-    "id": 8587,
-    "title": "The Lion King",
-    "year": "1994",
-    "poster_path": "/sKCr78MXSLixwmZ8DyJLrpMsd15.jpg",
-    "overview": "Young lion prince Simba, eager to one day become king of the Pride Lands, grows up under the watchful eye of his father Mufasa; all the while his villainous uncle Scar conspires to take the throne for himself. Amid betrayal and tragedy, Simba must confront his past and find his rightful place in the Circle of Life.",
-    "vote_average": 8.25,
-    "media_type": "movie",
-    "genre": "Animation",
-    "runtime": 89
-  },
-  {
     "id": 399366,
     "title": "Marrowbone",
     "year": "2017",
@@ -7140,17 +7257,6 @@
     "media_type": "movie",
     "genre": "Romance",
     "runtime": 128
-  },
-  {
-    "id": 508,
-    "title": "Love Actually",
-    "year": "2003",
-    "poster_path": "/7QPeVsr9rcFU9Gl90yg0gTOTpVv.jpg",
-    "overview": "Eight very different London couples deal with their romantic lives in various loosely interrelated tales all set during a frantic month before Christmas.",
-    "vote_average": 7.098,
-    "media_type": "movie",
-    "genre": "Comedy",
-    "runtime": 135
   },
   {
     "id": 507076,
@@ -7714,17 +7820,6 @@
     "runtime": 112
   },
   {
-    "id": 34546,
-    "title": "Shogun's Samurai: The Yagyu Clan Conspiracy",
-    "year": "1978",
-    "poster_path": "/jodipMyJcNwdSDfWJ6Chr2BG84k.jpg",
-    "overview": "Following the death of the second Tokugawa shogun, it is revealed that he was poisoned by retainers of his son Iemitsu in hopes of gaining him the shogunate despite the stammer and birthmark which undermine his respect. Iemitsu and his brother Tadanaga become bitter rivals for the shogunate, and the land is split into factions, eventually erupting into warfare. Iemitsu's mentor, his fencing instructor Yagyu, is fixated upon securing Iemitsu the shogunate and ends up betraying everyone, even his own family, in pursuit of the goal.",
-    "vote_average": 7.03,
-    "media_type": "movie",
-    "genre": "Action",
-    "runtime": 130
-  },
-  {
     "id": 736732,
     "title": "Broker",
     "year": "2022",
@@ -8176,17 +8271,6 @@
     "runtime": 135
   },
   {
-    "id": 426518,
-    "title": "Gunbuster: The Movie",
-    "year": "2006",
-    "poster_path": "/pCAVPmDDvtdqKmzzQ1Bq7vVjQtH.jpg",
-    "overview": "Noriko Takaya's dream is to become a space pilot like her father, who died when she was young after an attack by alien forces in deep space. After entering Okinawa Girls Space Pilot High School, she must persuade everyone, especially herself, that she can fulfill her goal and become an accomplished pilot despite being just an ordinary girl.",
-    "vote_average": 7.2,
-    "media_type": "movie",
-    "genre": "Animation",
-    "runtime": 95
-  },
-  {
     "id": 97187,
     "title": "Cyber City Oedo 808",
     "year": "1990",
@@ -8339,17 +8423,6 @@
     "media_type": "movie",
     "genre": "Drama",
     "runtime": 127
-  },
-  {
-    "id": 110,
-    "title": "Three Colors: Red",
-    "year": "1994",
-    "poster_path": "/JHmsBiX1tjCKqAul1lzC20WcAW.jpg",
-    "overview": "Part-time model Valentine unexpectedly befriends a retired judge after she runs over his dog. At first, the grumpy man shows no concern about the dog, and Valentine decides to keep it. But the two form a bond when she returns to his house and catches him listening to his neighbors’ phone calls.",
-    "vote_average": 7.88,
-    "media_type": "movie",
-    "genre": "Drama",
-    "runtime": 100
   },
   {
     "id": 137,
@@ -8660,17 +8733,6 @@
     "runtime": 141
   },
   {
-    "id": 108,
-    "title": "Three Colors: Blue",
-    "year": "1993",
-    "poster_path": "/33wsWxzsNstI8N7dvuwzFmj1qBd.jpg",
-    "overview": "The wife of a famous composer survives a car accident that kills her husband and daughter. Now alone, she shakes off her old identity and explores her newfound freedom but finds that she is unbreakably bound to other humans, including her husband’s mistress, whose existence she never suspected.",
-    "vote_average": 7.609,
-    "media_type": "movie",
-    "genre": "Drama",
-    "runtime": 98
-  },
-  {
     "id": 25623,
     "title": "House",
     "year": "1977",
@@ -8680,17 +8742,6 @@
     "media_type": "movie",
     "genre": "Comedy",
     "runtime": 88
-  },
-  {
-    "id": 632458,
-    "title": "FLCL Progressive",
-    "year": "2018",
-    "poster_path": "/788yb9ecJ4Yp9QyW1bRrDKAuJTb.jpg",
-    "overview": "Hidomi Hibajiri is a young girl who never takes off her headphones. Her whole life consists of going to school, helping out at her mother's cafe, and listening to music. With nothing else to break the crippling monotony, she keeps her headphones on at all times. That is, until she is run over by a mysterious guitar-wielding woman.",
-    "vote_average": 5.4,
-    "media_type": "movie",
-    "genre": "Action",
-    "runtime": 132
   },
   {
     "id": 502033,
@@ -9452,17 +9503,6 @@
     "runtime": 107
   },
   {
-    "id": 33441,
-    "title": "Robot Carnival",
-    "year": "1991",
-    "poster_path": "/2DTREQNErBYtZd1isRqdqNbbXA8.jpg",
-    "overview": "An anthology of various tales told in various styles with robots being the one common element among them.",
-    "vote_average": 6.7,
-    "media_type": "movie",
-    "genre": "Animation",
-    "runtime": 93
-  },
-  {
     "id": 15999,
     "title": "Vampire Hunter D: Bloodlust",
     "year": "2001",
@@ -9914,17 +9954,6 @@
     "runtime": 121
   },
   {
-    "id": 812583,
-    "title": "Wake Up Dead Man: A Knives Out Mystery",
-    "year": "2025",
-    "poster_path": "/iV9LM8aUb83BjCCx2RUnKE5sSQg.jpg",
-    "overview": "When young priest Jud Duplenticy is sent to assist charismatic firebrand Monsignor Jefferson Wicks, it’s clear that all is not well in the pews. After a sudden and seemingly impossible murder rocks the town, the lack of an obvious suspect prompts local police chief Geraldine Scott to join forces with renowned detective Benoit Blanc to unravel a mystery that defies all logic.",
-    "vote_average": 7.212,
-    "media_type": "movie",
-    "genre": "Thriller",
-    "runtime": 145
-  },
-  {
     "id": 331482,
     "title": "Little Women",
     "year": "2019",
@@ -10011,17 +10040,6 @@
     "media_type": "movie",
     "genre": "Thriller",
     "runtime": 122
-  },
-  {
-    "id": 53023,
-    "title": "Happiness",
-    "year": "1965",
-    "poster_path": "/1mNJ4PFyECg2j09upmzcspZypFd.jpg",
-    "overview": "Though married to the good-natured, beautiful Thérèse, young husband and father François finds himself falling unquestioningly into an affair with an attractive postal worker.",
-    "vote_average": 7.452,
-    "media_type": "movie",
-    "genre": "Drama",
-    "runtime": 80
   },
   {
     "id": 27327,
@@ -10253,17 +10271,6 @@
     "media_type": "movie",
     "genre": "Action",
     "runtime": 145
-  },
-  {
-    "id": 1019939,
-    "title": "Hundreds of Beavers",
-    "year": "2024",
-    "poster_path": "/jBg64OA2QEWL0zaOFMoAGipeGjJ.jpg",
-    "overview": "In the 19th century, a drunken applejack salesman must go from zero to hero and become North America's greatest fur trapper by defeating hundreds of beavers.",
-    "vote_average": 7.266,
-    "media_type": "movie",
-    "genre": "Comedy",
-    "runtime": 108
   },
   {
     "id": 2440,
