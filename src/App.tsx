@@ -1,6 +1,5 @@
 import { Volume2, VolumeX, X } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { PWAInstallButton } from './components/PWAInstallButton';
 import { RevealOverlay } from './components/RevealOverlay';
 import { SyncScreen } from './components/SyncScreen';
 import { UnmatchedDrawer } from './components/UnmatchedDrawer';
@@ -9,10 +8,13 @@ import {
   buildWatchlistPreviewMovies,
   clearCachedMovies,
   fetchWatchlistCsv,
+  fetchWatchlistVersion,
   readCachedMovieDetails,
   readCachedMovies,
+  readStoredWatchlistVersion,
   recordRolledMovie,
   resetRollHistory,
+  saveStoredWatchlistVersion,
   tryLoadStaticMoviesJson,
 } from './services/tmdbSync';
 import {
@@ -63,6 +65,9 @@ export default function App() {
 
   const [isSyncing, setIsSyncing] = useState(true);
   const [isBaking, setIsBaking] = useState(false);
+  const [showLoadingOverlay, setShowLoadingOverlay] = useState(true);
+  const [loadingFadingOut, setLoadingFadingOut] = useState(false);
+  const loadingFadeTimerRef = useRef<number | null>(null);
   const [bakeProgress, setBakeProgress] = useState<BakeProgress>({
     completed: 0,
     total: 1,
@@ -98,6 +103,11 @@ export default function App() {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const toastTimerRef = useRef<number | null>(null);
   const [contextLost, setContextLost] = useState(false);
+  const [shadowBottomY, setShadowBottomY] = useState<number | null>(null);
+  const [viewportSize, setViewportSize] = useState<{ w: number; h: number }>(() => ({
+    w: typeof window !== 'undefined' ? window.innerWidth : 1024,
+    h: typeof window !== 'undefined' ? window.innerHeight : 768,
+  }));
   const isOnline = useOnlineStatus();
 
   const moviesRef = useRef<MovieRecord[]>([]);
@@ -122,15 +132,45 @@ export default function App() {
   }, [isRolling]);
 
   useEffect(() => {
+    const onResize = () => {
+      setViewportSize({ w: window.innerWidth, h: window.innerHeight });
+    };
+    window.addEventListener('resize', onResize);
     return () => {
+      window.removeEventListener('resize', onResize);
       if (fadeClearTimerRef.current !== null) {
         clearTimeout(fadeClearTimerRef.current);
       }
       if (toastTimerRef.current !== null) {
         clearTimeout(toastTimerRef.current);
       }
+      if (loadingFadeTimerRef.current !== null) {
+        clearTimeout(loadingFadeTimerRef.current);
+      }
     };
   }, []);
+
+  const isLoading = isSyncing || isBaking;
+
+  useEffect(() => {
+    if (loadingFadeTimerRef.current !== null) {
+      clearTimeout(loadingFadeTimerRef.current);
+      loadingFadeTimerRef.current = null;
+    }
+
+    if (isLoading) {
+      setShowLoadingOverlay(true);
+      setLoadingFadingOut(false);
+      return;
+    }
+
+    setLoadingFadingOut(true);
+    loadingFadeTimerRef.current = window.setTimeout(() => {
+      setShowLoadingOverlay(false);
+      setLoadingFadingOut(false);
+      loadingFadeTimerRef.current = null;
+    }, 620);
+  }, [isLoading]);
 
   const showToast = useCallback((msg: string) => {
     if (toastTimerRef.current !== null) {
@@ -151,14 +191,28 @@ export default function App() {
     setSyncError(null);
 
     try {
+      const remoteVersion = await fetchWatchlistVersion(controller.signal);
+      if (controller.signal.aborted) return;
+
+      const storedVersion = readStoredWatchlistVersion();
+      if (remoteVersion?.updated && storedVersion !== remoteVersion.updated) {
+        clearCachedMovies();
+        await clearBakedCollageCache();
+        if (controller.signal.aborted) return;
+      }
+
       const staticMovies = await tryLoadStaticMoviesJson(controller.signal);
       if (controller.signal.aborted) return;
 
       if (staticMovies) {
+        if (remoteVersion?.updated) {
+          saveStoredWatchlistVersion(remoteVersion.updated);
+        }
         setMovies(staticMovies);
         setUnmatched([]);
         setIsPreviewMode(false);
         setShowPreviewBanner(false);
+        setIsBaking(true);
         setIsSyncing(false);
         return;
       }
@@ -170,6 +224,7 @@ export default function App() {
           setUnmatched(cached.unmatched || []);
           setIsPreviewMode(false);
           setShowPreviewBanner(false);
+          setIsBaking(true);
           setIsSyncing(false);
           return;
         }
@@ -191,6 +246,7 @@ export default function App() {
       setUnmatched([]);
       setIsPreviewMode(true);
       setShowPreviewBanner(true);
+      setIsBaking(previewMovies.length > 0);
       setIsSyncing(false);
     } catch (err) {
       if (err instanceof DOMException && err.name === 'AbortError') return;
@@ -353,6 +409,9 @@ export default function App() {
       onContextLostChange: (lost) => {
         setContextLost(lost);
       },
+      onShadowBottomChange: (bottomY) => {
+        setShadowBottomY(bottomY);
+      },
     });
 
     engineRef.current = engine;
@@ -411,10 +470,10 @@ export default function App() {
     engineRef.current?.closeRevealAndReturn();
   }, []);
 
-  const handleResync = useCallback(() => {
+  const handleResync = useCallback(async () => {
     clearCachedMovies();
-    void clearBakedCollageCache();
-    void loadStartupData(true);
+    await clearBakedCollageCache();
+    await loadStartupData(true);
   }, [loadStartupData]);
 
   useEffect(() => {
@@ -472,11 +531,13 @@ export default function App() {
   const handleUsePreviewFallback = useCallback(async () => {
     try {
       const rows = await fetchWatchlistCsv();
-      setMovies(buildWatchlistPreviewMovies(rows));
+      const previewMovies = buildWatchlistPreviewMovies(rows);
+      setMovies(previewMovies);
       setUnmatched([]);
       setIsPreviewMode(true);
       setShowPreviewBanner(true);
       setSyncError(null);
+      setIsBaking(previewMovies.length > 0);
       setIsSyncing(false);
     } catch {
       // Keep error screen if CSV itself failed
@@ -484,6 +545,14 @@ export default function App() {
   }, []);
 
   const hideChromeForReveal = isZoomedReveal || Boolean(revealedMovie) || Boolean(swapMovie);
+  const isMobileViewport = viewportSize.w < 768;
+  const estimatedHintHeight = mode === 'darts' ? 24 : isMobileViewport ? 32 : 44;
+  const minBottomClearance = isMobileViewport ? 120 : 28;
+  const maxHintTop = Math.max(150, viewportSize.h - minBottomClearance - estimatedHintHeight);
+  const hintTopPx = Math.max(
+    150,
+    Math.min(shadowBottomY !== null ? shadowBottomY + 24 : maxHintTop, maxHintTop),
+  );
 
   return (
     <div className="relative h-screen w-screen overflow-hidden bg-white text-[#111215] select-none">
@@ -500,16 +569,16 @@ export default function App() {
         </div>
       )}
 
-      {/* Top Header: Centered Hand-Drawn Title + Darts Mode Toggle under "dice", Top-Right Sound Button */}
+      {/* Top Header: Centered Hand-Drawn Title + Darts Mode Toggle under "dice" (nothing in top-right) */}
       {!isSyncing && !isBaking && (
         <header
-          className={`pointer-events-none fixed inset-x-0 top-0 z-20 px-4 pt-5 sm:px-7 sm:pt-6 overflow-visible transition-opacity duration-500 ${
+          className={`pointer-events-none fixed inset-x-0 top-0 z-20 px-4 pt-3.5 sm:px-7 sm:pt-6 overflow-visible transition-opacity duration-500 ${
             hideChromeForReveal ? 'opacity-0' : 'opacity-100'
           }`}
         >
           <div className="mx-auto flex justify-center text-center overflow-visible">
             <div
-              className={`relative inline-block overflow-visible ${
+              className={`relative inline-block max-w-full overflow-visible ${
                 hideChromeForReveal ? 'pointer-events-none' : 'pointer-events-auto'
               }`}
             >
@@ -517,7 +586,7 @@ export default function App() {
                 <img
                   src="./assets/luis-title.png"
                   alt="Luis's big movie dice"
-                  className="block h-auto w-[min(76vw,349px)] sm:h-[90px] sm:w-auto sm:max-w-[82vw] select-none"
+                  className="block h-auto w-[min(calc(100vw-32px),440px)] sm:h-[90px] sm:w-auto sm:max-w-[82vw] select-none"
                   draggable={false}
                 />
               </h1>
@@ -528,7 +597,7 @@ export default function App() {
                 aria-pressed={mode === 'darts'}
                 aria-label={mode === 'darts' ? 'Switch to dice mode' : 'Switch to darts mode'}
                 title={mode === 'darts' ? 'Switch to dice mode' : 'Switch to darts mode'}
-                className="mode-btn absolute right-0 top-[calc(100%+8px)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black rounded-xs"
+                className="mode-btn absolute right-0 top-[calc(100%+6px)] sm:top-[calc(100%+8px)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black rounded-xs"
               >
                 <img
                   src="./assets/darts-mode.png"
@@ -556,23 +625,6 @@ export default function App() {
                 )}
               </button>
             </div>
-          </div>
-
-          <div
-            className={`fixed top-4 right-4 sm:top-5 sm:right-7 flex items-center gap-2 ${
-              hideChromeForReveal ? 'pointer-events-none' : 'pointer-events-auto'
-            }`}
-          >
-            <PWAInstallButton />
-            <button
-              type="button"
-              onClick={() => setMuted((m) => !m)}
-              aria-label={muted ? 'Unmute sound effects' : 'Mute sound effects'}
-              title={muted ? 'Unmute sounds' : 'Mute sounds'}
-              className="flex h-10 w-10 items-center justify-center rounded-lg border border-black/12 bg-white/90 text-[#111215] shadow-xs transition-colors hover:border-black/30 hover:text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black cursor-pointer"
-            >
-              {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
-            </button>
           </div>
         </header>
       )}
@@ -617,10 +669,11 @@ export default function App() {
         </div>
       )}
 
-      {/* Bottom Hand-Drawn Hint (hidden while rolling & during reveal) */}
+      {/* Hand-Drawn Hint positioned ~24px below the ball's shadow (never lower than 120px from bottom on mobile) */}
       {!isSyncing && !isBaking && (
         <footer
-          className={`pointer-events-none fixed inset-x-0 bottom-0 z-20 flex flex-col items-center pb-5 sm:pb-6 px-4 transition-opacity duration-500 ${
+          style={{ top: `${hintTopPx}px` }}
+          className={`pointer-events-none fixed inset-x-0 z-20 flex flex-col items-center px-4 transition-opacity duration-500 ${
             hideChromeForReveal ? 'opacity-0' : 'opacity-100'
           }`}
         >
@@ -645,11 +698,15 @@ export default function App() {
         </footer>
       )}
 
-      {/* Bottom-Left Subtle About Link & Attribution Popover */}
+      {/* Bottom-Left Controls: Subtle Sound Toggle above About Link & Attribution Popover */}
       {!isSyncing && !isBaking && (
         <div
           ref={aboutContainerRef}
-          className={`fixed bottom-3.5 left-4 sm:bottom-4 sm:left-6 z-30 transition-opacity duration-500 ${
+          style={{
+            left: '16px',
+            bottom: 'calc(16px + env(safe-area-inset-bottom, 0px))',
+          }}
+          className={`fixed z-30 flex flex-col items-start gap-0.5 transition-opacity duration-500 ${
             hideChromeForReveal ? 'pointer-events-none opacity-0' : 'pointer-events-auto opacity-100'
           }`}
         >
@@ -658,7 +715,7 @@ export default function App() {
               id="about-popover"
               role="dialog"
               aria-label="About Luis's Big Movie Dice"
-              className="absolute bottom-full left-0 mb-2.5 w-[264px] sm:w-[292px] rounded-xl border border-black/10 bg-white/96 p-4 text-[12px] leading-relaxed text-[#4E525D] shadow-[0_10px_30px_rgba(0,0,0,0.09)] backdrop-blur-xs"
+              className="absolute bottom-full left-0 mb-2.5 w-[264px] sm:w-[292px] rounded-xl border border-black/10 bg-white p-4 text-[12px] leading-relaxed text-[#4E525D] shadow-[0_10px_30px_rgba(0,0,0,0.09)]"
             >
               <p className="text-[#111215]">
                 made by livy · movie data &amp; posters from TMDB.
@@ -681,6 +738,16 @@ export default function App() {
               </a>
             </div>
           )}
+
+          <button
+            type="button"
+            onClick={() => setMuted((m) => !m)}
+            aria-label={muted ? 'Unmute sound effects' : 'Mute sound effects'}
+            title={muted ? 'Unmute sounds' : 'Mute sounds'}
+            className="flex h-10 w-10 items-center justify-start rounded-lg border-0 bg-transparent p-0 text-[#9a9da6] transition-colors duration-150 hover:text-[#4E525D] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black/40 cursor-pointer"
+          >
+            {muted ? <VolumeX className="h-[18px] w-[18px]" /> : <Volume2 className="h-[18px] w-[18px]" />}
+          </button>
 
           <button
             type="button"
@@ -757,10 +824,11 @@ export default function App() {
         />
       )}
 
-      {/* Sync / Collage Baking Screen */}
-      {(isSyncing || isBaking) && (
+      {/* Sync / Collage Baking Screen (fades out smoothly over 0.6s into the main screen) */}
+      {showLoadingOverlay && (
         <SyncScreen
           isBaking={isBaking}
+          isFadingOut={loadingFadingOut}
           bakeProgress={bakeProgress}
           progress={syncProgress}
           errorMessage={syncError}
@@ -774,7 +842,11 @@ export default function App() {
         <div
           role="status"
           aria-live="polite"
-          className="pointer-events-none fixed bottom-10 left-4 sm:bottom-11 sm:left-6 z-40 flex items-center gap-2 rounded-lg border border-black/12 bg-white/95 px-2.5 py-1 text-[11px] font-medium text-[#4E525D] shadow-sm"
+          style={{
+            right: '16px',
+            bottom: 'calc(16px + env(safe-area-inset-bottom, 0px))',
+          }}
+          className="pointer-events-none fixed z-40 flex items-center gap-2 rounded-lg border border-black/12 bg-white/95 px-2.5 py-1 text-[11px] font-medium text-[#4E525D] shadow-sm"
         >
           <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
           Offline — using cached data

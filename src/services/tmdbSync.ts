@@ -9,7 +9,13 @@ import type {
 export const CACHE_STORAGE_KEY = 'movieDieCache_v2';
 const LEGACY_CACHE_STORAGE_KEY = 'movieDieCache_v1';
 export const HISTORY_STORAGE_KEY = 'movieDieHistory_v1';
+export const WATCHLIST_VERSION_STORAGE_KEY = 'movieDieWatchlistVersion_v1';
 export const RECENT_HISTORY_LIMIT = 50;
+
+export interface WatchlistVersionPayload {
+  updated: string;
+  count?: number;
+}
 
 export function parseWatchlistCsv(csvText: string): WatchlistRow[] {
   const rows: WatchlistRow[] = [];
@@ -85,6 +91,51 @@ export function clearCachedMovies(): void {
     localStorage.removeItem(CACHE_STORAGE_KEY);
   } catch {
     // Ignore
+  }
+}
+
+export async function fetchWatchlistVersion(
+  signal?: AbortSignal,
+): Promise<WatchlistVersionPayload | null> {
+  try {
+    const res = await fetch('./data/version.json', { cache: 'no-cache', signal });
+    if (!res.ok) return null;
+    const data = (await res.json()) as unknown;
+    if (
+      data &&
+      typeof data === 'object' &&
+      'updated' in data &&
+      typeof (data as { updated: unknown }).updated === 'string' &&
+      (data as { updated: string }).updated.trim().length > 0
+    ) {
+      const payload = data as { updated: string; count?: unknown };
+      return {
+        updated: payload.updated.trim(),
+        count: typeof payload.count === 'number' ? payload.count : undefined,
+      };
+    }
+    return null;
+  } catch (err) {
+    if (err instanceof DOMException && err.name === 'AbortError') {
+      throw err;
+    }
+    return null;
+  }
+}
+
+export function readStoredWatchlistVersion(): string | null {
+  try {
+    return localStorage.getItem(WATCHLIST_VERSION_STORAGE_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export function saveStoredWatchlistVersion(updated: string): void {
+  try {
+    localStorage.setItem(WATCHLIST_VERSION_STORAGE_KEY, updated);
+  } catch {
+    // Ignore storage errors
   }
 }
 

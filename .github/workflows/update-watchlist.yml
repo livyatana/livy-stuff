@@ -1,0 +1,38 @@
+name: Daily Watchlist Update
+
+on:
+  schedule:
+    - cron: '17 5 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-watchlist:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Sync Letterboxd watchlist with TMDB
+        env:
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+        run: node scripts/update-watchlist.mjs
+
+      - name: Commit and push updated watchlist
+        run: |
+          if [ -n "$(git status --porcelain public/data/movies.json public/data/version.json)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add public/data/movies.json public/data/version.json
+            git commit -m "chore: daily watchlist update"
+            git push
+          else
+            echo "No changes to commit."
+          fi

@@ -24,6 +24,7 @@
   font-variant-numeric: tabular-nums;
 }
 
+.font-luis-hand,
 .reveal-dialog-font,
 .reveal-dialog-font * {
   font-family: "Luis Hand", "Helvetica Neue", Helvetica, sans-serif;
@@ -74,6 +75,19 @@
 
 .animate-hint-bob {
   animation: hintBob 2s ease-in-out infinite;
+}
+
+@keyframes scrapSpin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-scrap-spin {
+  animation: scrapSpin 7s linear infinite;
 }
 
 .mode-btn {
@@ -150,7 +164,8 @@
   .animate-dialog-button,
   .animate-clean-poster-in,
   .animate-clean-poster-settle,
-  .animate-hint-bob {
+  .animate-hint-bob,
+  .animate-scrap-spin {
     animation: none;
     opacity: 1;
     transform: none;

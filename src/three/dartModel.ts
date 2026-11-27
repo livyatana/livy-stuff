@@ -11,6 +11,12 @@ export interface DartInstance {
   dispose: () => void;
 }
 
+export interface XRayDartOverlay {
+  group: THREE.Group;
+  setOpacity: (opacity: number) => void;
+  dispose: () => void;
+}
+
 export interface StylisedHandRig {
   group: THREE.Group;
   dartSocket: THREE.Group;
@@ -175,6 +181,118 @@ export function createRealisticDartGroup(): DartInstance {
     dispose: () => {
       geometries.forEach((g) => g.dispose());
       materials.forEach((m) => m.dispose());
+    },
+  };
+}
+
+/**
+ * Creates a synchronized "x-ray" copy of a dart (reusing its geometries) rendered with
+ * depthTest: false at 35% white opacity plus a soft neon-pink rim glow and outline,
+ * so the dart remains clearly readable even while hidden behind the ball.
+ */
+export function createXRayDartOverlay(sourceDartGroup: THREE.Group): XRayDartOverlay {
+  const group = new THREE.Group();
+  const opacityUniform = { value: 0.0 };
+
+  const xrayBodyMat = new THREE.ShaderMaterial({
+    uniforms: {
+      uOpacity: opacityUniform,
+      uBaseColor: { value: new THREE.Color(0xffffff) },
+      uRimColor: { value: new THREE.Color(0xff2e97) },
+    },
+    vertexShader: `
+      varying vec3 vNormalView;
+      varying vec3 vViewDir;
+      void main() {
+        vec4 mvPos = modelViewMatrix * vec4(position, 1.0);
+        vNormalView = normalize(normalMatrix * normal);
+        vViewDir = normalize(-mvPos.xyz);
+        gl_Position = projectionMatrix * mvPos;
+      }
+    `,
+    fragmentShader: `
+      uniform float uOpacity;
+      uniform vec3 uBaseColor;
+      uniform vec3 uRimColor;
+      varying vec3 vNormalView;
+      varying vec3 vViewDir;
+      void main() {
+        float ndotv = abs(dot(normalize(vNormalView), normalize(vViewDir)));
+        float rim = pow(clamp(1.0 - ndotv, 0.0, 1.0), 1.55);
+        vec3 col = mix(uBaseColor, uRimColor, smoothstep(0.18, 0.85, rim));
+        float alpha = mix(0.35, 0.85, rim) * uOpacity;
+        if (alpha <= 0.002) discard;
+        gl_FragColor = vec4(col, alpha);
+      }
+    `,
+    transparent: true,
+    depthTest: false,
+    depthWrite: false,
+    side: THREE.DoubleSide,
+  });
+
+  const outlineMat = new THREE.ShaderMaterial({
+    uniforms: {
+      uOpacity: opacityUniform,
+      uOutlineColor: { value: new THREE.Color(0xff2e97) },
+      uThickness: { value: 0.0045 },
+    },
+    vertexShader: `
+      uniform float uThickness;
+      void main() {
+        vec3 expanded = position + normal * uThickness;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(expanded, 1.0);
+      }
+    `,
+    fragmentShader: `
+      uniform float uOpacity;
+      uniform vec3 uOutlineColor;
+      void main() {
+        float alpha = 0.48 * uOpacity;
+        if (alpha <= 0.002) discard;
+        gl_FragColor = vec4(uOutlineColor, alpha);
+      }
+    `,
+    transparent: true,
+    depthTest: false,
+    depthWrite: false,
+    side: THREE.BackSide,
+  });
+
+  sourceDartGroup.children.forEach((child) => {
+    if (!(child instanceof THREE.Mesh)) return;
+
+    const outlineMesh = new THREE.Mesh(child.geometry, outlineMat);
+    outlineMesh.position.copy(child.position);
+    outlineMesh.rotation.copy(child.rotation);
+    outlineMesh.scale.copy(child.scale);
+    outlineMesh.castShadow = false;
+    outlineMesh.receiveShadow = false;
+    outlineMesh.renderOrder = 29;
+    group.add(outlineMesh);
+
+    const bodyMesh = new THREE.Mesh(child.geometry, xrayBodyMat);
+    bodyMesh.position.copy(child.position);
+    bodyMesh.rotation.copy(child.rotation);
+    bodyMesh.scale.copy(child.scale);
+    bodyMesh.castShadow = false;
+    bodyMesh.receiveShadow = false;
+    bodyMesh.renderOrder = 30;
+    group.add(bodyMesh);
+  });
+
+  group.visible = false;
+
+  return {
+    group,
+    setOpacity: (opacity: number) => {
+      const clamped = THREE.MathUtils.clamp(opacity, 0, 1);
+      opacityUniform.value = clamped;
+      group.visible = clamped > 0.004;
+    },
+    dispose: () => {
+      xrayBodyMat.dispose();
+      outlineMat.dispose();
     },
   };
 }

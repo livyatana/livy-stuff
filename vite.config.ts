@@ -48,10 +48,25 @@ export default defineConfig(() => {
         },
         workbox: {
           globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2,json}'],
-          globIgnores: ['**/assets/aistudio/**'],
+          globIgnores: ['**/assets/aistudio/**', '**/data/**'],
           maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
           cleanupOutdatedCaches: true,
           runtimeCaching: [
+            {
+              urlPattern: /\/data\//i,
+              handler: 'NetworkFirst',
+              options: {
+                cacheName: 'watchlist-data-cache',
+                networkTimeoutSeconds: 5,
+                expiration: {
+                  maxEntries: 10,
+                  maxAgeSeconds: 60 * 60 * 24 * 30,
+                },
+                cacheableResponse: {
+                  statuses: [0, 200],
+                },
+              },
+            },
             {
               urlPattern: /^https:\/\/image\.tmdb\.org\/t\/p\/.*/i,
               handler: 'CacheFirst',

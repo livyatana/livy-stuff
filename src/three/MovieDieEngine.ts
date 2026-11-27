@@ -27,10 +27,12 @@ import {
   createAimArcVisual,
   createRealisticDartGroup,
   createStylisedHandGroup,
+  createXRayDartOverlay,
   DART_TIP_Z,
   type AimArcVisual,
   type DartInstance,
   type StylisedHandRig,
+  type XRayDartOverlay,
 } from './dartModel';
 
 export type GameMode = 'dice' | 'darts';
@@ -55,6 +57,18 @@ const _winnerCenterWorld = new THREE.Vector3();
 const _winnerRightWorld = new THREE.Vector3();
 const _winnerUpWorld = new THREE.Vector3();
 const _basisMat = new THREE.Matrix4();
+const _orbitQ1 = new THREE.Quaternion();
+const _orbitDirA = new THREE.Vector3();
+const _orbitDirB = new THREE.Vector3();
+const _orbitDirOut = new THREE.Vector3();
+const _orbitAxisTmp = new THREE.Vector3();
+const _safeUpTmp = new THREE.Vector3();
+const _viewDirTmp = new THREE.Vector3();
+const _shadowProjTmp = new THREE.Vector3();
+const _camHorizTmp = new THREE.Vector3();
+const _dartWorldTmp = new THREE.Vector3();
+const _dartRayDirTmp = new THREE.Vector3();
+const _dartDeltaQuat = new THREE.Quaternion();
 
 export interface FlingVector {
   vx: number;
@@ -96,12 +110,14 @@ export interface EngineCallbacks {
   onReturnComplete: () => void;
   onFlingRollRequest: (fling: FlingVector) => void;
   onContextLostChange: (lost: boolean) => void;
+  onShadowBottomChange?: (shadowBottomY: number) => void;
 }
 
 type EnginePhase =
   | 'idle'
   | 'rolling'
   | 'revealPause'
+  | 'dartRotate'
   | 'pushIn'
   | 'liftUp'
   | 'swapCrossfade'
@@ -325,11 +341,20 @@ export class MovieDieEngine {
   private stuckDartPivot: THREE.Group | null = null;
   private stuckDartQuiverNode: THREE.Group | null = null;
   private stuckDartInstance: DartInstance | null = null;
+  private stuckDartXRay: XRayDartOverlay | null = null;
+  private xrayOpacity = 0;
   private quiverElapsed = 0;
   private impactElapsed = 0;
   private impactSlowdownDuration = 2.0;
   private impactSpinAxis = new THREE.Vector3(0, 1, 0);
   private impactStartAngSpeed = 0;
+
+  // Darts reveal ball rotation (camera stays still, ball slerps 2.5s so dart faces camera framed slightly from the side)
+  private dartRotateElapsed = 0;
+  private dartRotateDuration = 2.5;
+  private dartRotateStartQuat = new THREE.Quaternion();
+  private dartRotateEndQuat = new THREE.Quaternion();
+  private dartRotateStartTarget = new THREE.Vector3();
 
   // Shader dent/ripple uniforms on dieMaterial
   private dentDirUniform = { value: new THREE.Vector3(0, 1, 0) };
@@ -347,7 +372,7 @@ export class MovieDieEngine {
   private pauseElapsed = 0;
   private pauseDuration = 0.8;
 
-  // 2. Camera push-in flight (2.5s power2.inOut)
+  // 2. Camera push-in flight (Dice: 2.5s Bezier; Darts: smooth front-side push-in after 2.5s ball rotation)
   private pushElapsed = 0;
   private pushDuration = 2.5;
   private pushBezierP0 = new THREE.Vector3();
@@ -360,6 +385,15 @@ export class MovieDieEngine {
   private pushEndCamUp = new THREE.Vector3(0, 0, -1);
   private pushOutwardNormal = new THREE.Vector3(0, 1, 0);
   private pushDistFromPoster = 1.4;
+  private pushUseOrbit = false;
+  private pushOrbitStartDir = new THREE.Vector3(0, 0, 1);
+  private pushOrbitEndDir = new THREE.Vector3(0, 1, 0);
+  private pushOrbitViaDir = new THREE.Vector3(1, 0.35, 0);
+  private pushOrbitUseVia = false;
+  private pushOrbitStartRadius = 8.2;
+  private pushOrbitMidRadius = DIE_RADIUS * 1.65;
+  private pushOrbitEndRadius = 2.6;
+  private pushOrbitFrac = 0.74;
 
   // 3. Flat upright scrap lift & scale up (2.0s, power2.out)
   private liftElapsed = 0;
@@ -373,7 +407,7 @@ export class MovieDieEngine {
   private settleElapsed = 0;
   private settleDuration = 0.5;
 
-  // Closing: crossfade back to scrap, shrink onto ball, camera returns (1.5s)
+  // Closing: crossfade back to scrap, shrink onto ball, camera returns (1.5–2.2s)
   private returnElapsed = 0;
   private returnDuration = 1.5;
   private returnCardStartPos = new THREE.Vector3();
@@ -387,10 +421,19 @@ export class MovieDieEngine {
   private returnEndCamTarget = new THREE.Vector3();
   private returnStartCamUp = new THREE.Vector3(0, 0, -1);
   private returnEndCamUp = new THREE.Vector3(0, 1, 0);
+  private returnUseOrbit = false;
+  private returnOrbitStartDir = new THREE.Vector3(0, 1, 0);
+  private returnOrbitEndDir = new THREE.Vector3(0, 0, 1);
+  private returnOrbitViaDir = new THREE.Vector3(1, 0.35, 0);
+  private returnOrbitUseVia = false;
+  private returnOrbitStartRadius = 2.6;
+  private returnOrbitMidRadius = DIE_RADIUS * 1.65;
+  private returnOrbitEndRadius = 8.2;
 
   // Normal view camera offset (~60% of viewport height, centered between title and hint)
   private camOffset = new THREE.Vector3(0, 3.15, 8.05);
   private camTargetY = 1.92;
+  private lastReportedShadowBottomY = -1;
 
   // Pointer & Fling interaction
   private raycaster = new THREE.Raycaster();
@@ -467,6 +510,7 @@ export class MovieDieEngine {
 
     this.controls.addEventListener('change', () => {
       if (this.phase === 'idle' && this.mode === 'dice' && !this.modeTransitioning) {
+        this.emitShadowBottomIfNeeded();
         this.scheduleOnDemandRender();
       }
     });
@@ -557,11 +601,13 @@ export class MovieDieEngine {
         const prevWinShadow = this.winnerShadowMesh ? this.winnerShadowMesh.visible : false;
         const prevFlash = this.winnerFlashMesh ? this.winnerFlashMesh.visible : false;
         const prevArc = this.aimArc.points.visible;
+        const prevXRay = this.stuckDartXRay ? this.stuckDartXRay.group.visible : false;
         this.floorMesh.visible = false;
         this.contactShadowMesh.visible = false;
         this.aimArc.points.visible = false;
         if (this.winnerShadowMesh) this.winnerShadowMesh.visible = false;
         if (this.winnerFlashMesh) this.winnerFlashMesh.visible = false;
+        if (this.stuckDartXRay) this.stuckDartXRay.group.visible = false;
         try {
           origSsaoRender(renderer, writeBuffer, readBuffer, deltaTime, maskActive);
         } finally {
@@ -570,6 +616,7 @@ export class MovieDieEngine {
           this.aimArc.points.visible = prevArc;
           if (this.winnerShadowMesh) this.winnerShadowMesh.visible = prevWinShadow;
           if (this.winnerFlashMesh) this.winnerFlashMesh.visible = prevFlash;
+          if (this.stuckDartXRay) this.stuckDartXRay.group.visible = prevXRay;
         }
       };
 
@@ -641,23 +688,189 @@ export class MovieDieEngine {
   }
 
   private updateResponsiveCamOffset(aspect: number): void {
-    const portraitScale = aspect < 0.9 ? 0.9 / Math.max(0.45, aspect) : 1.0;
-    this.camOffset.set(0, 3.32 * Math.pow(portraitScale, 0.52), 8.2 * portraitScale);
-    this.camTargetY = 1.92 * Math.pow(portraitScale, 0.25);
+    if (aspect < 0.9) {
+      // Portrait / mobile: keep ball bold (~76% of width) and shifted up into the center
+      // of the space between the title and bottom hint so there is no large gap under the title.
+      const tMobile = THREE.MathUtils.clamp((0.9 - aspect) / 0.45, 0, 1);
+      const zDist = Math.max(8.2, Math.min(13.8, 6.2 / Math.max(0.42, aspect)));
+      const camY = THREE.MathUtils.lerp(3.32, 3.78, tMobile);
+      this.camOffset.set(0, camY, zDist);
+      this.camTargetY = THREE.MathUtils.lerp(1.92, 1.02, smoothstep(0, 1, tMobile));
+      return;
+    }
+    this.camOffset.set(0, 3.32, 8.2);
+    this.camTargetY = 1.92;
   }
 
   private getDartsCameraPose(posOut: THREE.Vector3, targetOut: THREE.Vector3): void {
     const width = this.container.clientWidth || window.innerWidth;
     const height = this.container.clientHeight || window.innerHeight;
     const aspect = width / Math.max(1, height);
-    const portraitScale = aspect < 0.95 ? 0.95 / Math.max(0.45, aspect) : 1.0;
     const ballCenterY = DIE_RADIUS + DARTS_FLOAT_HEIGHT;
-    posOut.set(
-      0,
-      ballCenterY + 0.65 * Math.pow(portraitScale, 0.35),
-      8.25 * Math.pow(portraitScale, 0.68),
-    );
+
+    if (aspect < 0.95) {
+      const tMobile = THREE.MathUtils.clamp((0.95 - aspect) / 0.5, 0, 1);
+      const zDist = Math.max(8.25, Math.min(13.4, 6.35 / Math.max(0.42, aspect)));
+      const camY = ballCenterY + THREE.MathUtils.lerp(0.65, 0.88, tMobile);
+      posOut.set(0, camY, zDist);
+      // Lower look target on portrait so the ball rises toward the title and centers cleanly above the hand
+      targetOut.set(0, ballCenterY + THREE.MathUtils.lerp(0.22, -0.52, smoothstep(0, 1, tMobile)), 0);
+      return;
+    }
+
+    posOut.set(0, ballCenterY + 0.65, 8.25);
     targetOut.set(0, ballCenterY + 0.22, 0);
+  }
+
+  private emitShadowBottomIfNeeded(): void {
+    if (!this.callbacks.onShadowBottomChange || !this.dieGroup || this.phase !== 'idle') return;
+    const height = this.container.clientHeight || window.innerHeight;
+    if (height <= 0) return;
+
+    this.camera.updateMatrixWorld();
+
+    const dieX = this.dieGroup.position.x;
+    const dieY = this.dieGroup.position.y;
+    const dieZ = this.dieGroup.position.z;
+
+    // Direction horizontally from ball toward camera so we project the front-most visible shadow edge
+    _camHorizTmp.set(this.camera.position.x - dieX, 0, this.camera.position.z - dieZ);
+    if (_camHorizTmp.lengthSq() < 1e-5) {
+      _camHorizTmp.set(0, 0, 1);
+    } else {
+      _camHorizTmp.normalize();
+    }
+
+    const shadowScale = this.contactShadowMesh.scale.x || 1;
+    const visibleShadowRadius = DIE_RADIUS * 1.02 * shadowScale;
+
+    _shadowProjTmp.set(
+      dieX + _camHorizTmp.x * visibleShadowRadius,
+      0.012,
+      dieZ + _camHorizTmp.z * visibleShadowRadius,
+    );
+    _shadowProjTmp.project(this.camera);
+    const shadowEdgeY = (-_shadowProjTmp.y * 0.5 + 0.5) * height;
+
+    // Also project the very bottom of the sphere silhouette and take whichever sits lower on screen
+    _shadowProjTmp.set(dieX, Math.max(0, dieY - DIE_RADIUS), dieZ);
+    _shadowProjTmp.project(this.camera);
+    const ballBottomY = (-_shadowProjTmp.y * 0.5 + 0.5) * height;
+
+    const bottomY = Math.round(Math.max(shadowEdgeY, ballBottomY));
+    if (Math.abs(bottomY - this.lastReportedShadowBottomY) >= 1) {
+      this.lastReportedShadowBottomY = bottomY;
+      this.callbacks.onShadowBottomChange(bottomY);
+    }
+  }
+
+  private enforceCameraBallClearance(): void {
+    if (!this.dieGroup) return;
+    const minDist = DIE_RADIUS * 1.15;
+    _v3.subVectors(this.camera.position, this.dieGroup.position);
+    const distSq = _v3.lengthSq();
+    if (distSq < minDist * minDist) {
+      if (distSq > 1e-8) {
+        _v3.multiplyScalar(minDist / Math.sqrt(distSq));
+      } else {
+        _v3.copy(this.pushOutwardNormal).multiplyScalar(minDist);
+      }
+      this.camera.position.copy(this.dieGroup.position).add(_v3);
+    }
+  }
+
+  private setSafeCameraUp(
+    desiredUp: THREE.Vector3,
+    camPos: THREE.Vector3,
+    targetPos: THREE.Vector3,
+  ): void {
+    _viewDirTmp.subVectors(targetPos, camPos);
+    if (_viewDirTmp.lengthSq() < 1e-8) {
+      this.camera.up.copy(UP_VECTOR);
+      return;
+    }
+    _viewDirTmp.normalize();
+    _safeUpTmp
+      .copy(desiredUp)
+      .addScaledVector(_viewDirTmp, -desiredUp.dot(_viewDirTmp));
+    if (_safeUpTmp.lengthSq() < 1e-4) {
+      _safeUpTmp
+        .copy(this.pushEndCamUp)
+        .addScaledVector(_viewDirTmp, -this.pushEndCamUp.dot(_viewDirTmp));
+    }
+    if (_safeUpTmp.lengthSq() < 1e-4) {
+      _safeUpTmp
+        .set(0, 0, -1)
+        .addScaledVector(_viewDirTmp, _viewDirTmp.z);
+    }
+    if (_safeUpTmp.lengthSq() < 1e-4) {
+      _safeUpTmp.set(1, 0, 0);
+    } else {
+      _safeUpTmp.normalize();
+    }
+    this.camera.up.copy(_safeUpTmp);
+  }
+
+  private slerpUnitPair(
+    from: THREE.Vector3,
+    to: THREE.Vector3,
+    t: number,
+    out: THREE.Vector3,
+  ): THREE.Vector3 {
+    const dot = THREE.MathUtils.clamp(from.dot(to), -1, 1);
+    if (dot > 0.99995) {
+      return out.copy(from).lerp(to, t).normalize();
+    }
+    const angle = Math.acos(dot);
+    _orbitAxisTmp.crossVectors(from, to);
+    if (_orbitAxisTmp.lengthSq() < 1e-6) {
+      _orbitAxisTmp.crossVectors(from, UP_VECTOR);
+      if (_orbitAxisTmp.lengthSq() < 1e-6) _orbitAxisTmp.set(1, 0, 0);
+    }
+    _orbitAxisTmp.normalize();
+    _orbitQ1.setFromAxisAngle(_orbitAxisTmp, angle * t);
+    return out.copy(from).applyQuaternion(_orbitQ1).normalize();
+  }
+
+  private prepareOrbitPath(
+    startDir: THREE.Vector3,
+    endDir: THREE.Vector3,
+    viaOut: THREE.Vector3,
+  ): { angle: number; useVia: boolean } {
+    const dot = THREE.MathUtils.clamp(startDir.dot(endDir), -1, 1);
+    const angle = Math.acos(dot);
+
+    // Check if the direct geodesic is antipodal or dives underneath the ball toward the floor
+    _orbitDirA.addVectors(startDir, endDir);
+    const midLen = _orbitDirA.length();
+    const midY = midLen > 1e-4 ? _orbitDirA.y / midLen : -1;
+
+    if (dot < -0.94 || midLen < 0.12 || midY < -0.32) {
+      // Sweep cleanly around the right or left upper shoulder outside the ball
+      const sideSign = endDir.x >= 0 ? 1 : -1;
+      viaOut.set(sideSign * 0.92, 0.38, 0).normalize();
+      return { angle, useVia: true };
+    }
+
+    viaOut.copy(_orbitDirA).normalize();
+    return { angle, useVia: false };
+  }
+
+  private evalOrbitDirection(
+    t: number,
+    startDir: THREE.Vector3,
+    endDir: THREE.Vector3,
+    viaDir: THREE.Vector3,
+    useVia: boolean,
+    out: THREE.Vector3,
+  ): THREE.Vector3 {
+    if (!useVia) {
+      return this.slerpUnitPair(startDir, endDir, t, out);
+    }
+    // Spherical quadratic de Casteljau slerp: stays strictly on the unit sphere and clears the floor
+    this.slerpUnitPair(startDir, viaDir, t, _orbitDirA);
+    this.slerpUnitPair(viaDir, endDir, t, _orbitDirB);
+    return this.slerpUnitPair(_orbitDirA, _orbitDirB, t, out);
   }
 
   public setMuted(muted: boolean): void {
@@ -894,6 +1107,7 @@ diffuseColor.rgb *= (1.0 - clamp(vDentDepth * 4.5, 0.0, 0.14));
     if (!this.isSoftwareGl) {
       this.renderer.compile(this.scene, this.camera);
     }
+    this.emitShadowBottomIfNeeded();
     if (this.mode === 'darts') {
       this.startLoop();
     } else {
@@ -970,7 +1184,47 @@ diffuseColor.rgb *= (1.0 - clamp(vDentDepth * 4.5, 0.0, 0.14));
     this.returnBezierP0.copy(this.pushBezierP3);
     if (this.mode === 'darts') {
       this.getDartsCameraPose(this.returnBezierP3, this.returnEndCamTarget);
+      this.returnUseOrbit = true;
+
+      const diePos = this.dieGroup.position;
+      this.returnOrbitStartDir.subVectors(this.returnBezierP0, diePos);
+      this.returnOrbitStartRadius = Math.max(
+        DIE_RADIUS * 1.15,
+        this.returnOrbitStartDir.length(),
+      );
+      if (this.returnOrbitStartDir.lengthSq() > 1e-6) {
+        this.returnOrbitStartDir.normalize();
+      } else {
+        this.returnOrbitStartDir.copy(this.pushOutwardNormal);
+      }
+
+      this.returnOrbitEndDir.subVectors(this.returnBezierP3, diePos);
+      this.returnOrbitEndRadius = Math.max(
+        DIE_RADIUS * 1.6,
+        this.returnOrbitEndDir.length(),
+      );
+      if (this.returnOrbitEndDir.lengthSq() > 1e-6) {
+        this.returnOrbitEndDir.normalize();
+      } else {
+        this.returnOrbitEndDir.set(0, 0.1, 1).normalize();
+      }
+
+      this.returnOrbitMidRadius = Math.max(
+        DIE_RADIUS * 1.6,
+        this.returnOrbitStartRadius + 0.42,
+      );
+
+      const { angle, useVia } = this.prepareOrbitPath(
+        this.returnOrbitStartDir,
+        this.returnOrbitEndDir,
+        this.returnOrbitViaDir,
+      );
+      this.returnOrbitUseVia = useVia;
+      const arcFrac = THREE.MathUtils.clamp(angle / Math.PI, 0, 1);
+      this.returnDuration = THREE.MathUtils.lerp(1.5, 2.2, arcFrac);
     } else {
+      this.returnUseOrbit = false;
+      this.returnDuration = 1.5;
       this.returnBezierP3.set(dieX + this.camOffset.x, this.camOffset.y, dieZ + this.camOffset.z);
       this.returnEndCamTarget.set(dieX, this.camTargetY, dieZ);
     }
@@ -1102,21 +1356,60 @@ diffuseColor.rgb *= (1.0 - clamp(vDentDepth * 4.5, 0.0, 0.14));
       .copy(this.pushEndCamTarget)
       .addScaledVector(this.pushOutwardNormal, this.pushDistFromPoster);
 
+    if (this.mode === 'darts') {
+      // After the 2.5s ball rotation has turned the dart to face the camera (framed slightly from the side),
+      // glide smoothly straight in toward the dart's poster while always staying outside the ball.
+      this.pushUseOrbit = true;
+      this.pushOrbitStartDir.subVectors(this.pushBezierP0, diePos);
+      this.pushOrbitStartRadius = Math.max(
+        DIE_RADIUS * 1.6,
+        this.pushOrbitStartDir.length(),
+      );
+      if (this.pushOrbitStartDir.lengthSq() > 1e-6) {
+        this.pushOrbitStartDir.normalize();
+      } else {
+        this.pushOrbitStartDir.set(0, 0.1, 1).normalize();
+      }
+
+      this.pushOrbitEndDir.copy(this.pushOutwardNormal).normalize();
+      this.pushOrbitEndRadius = Math.max(
+        DIE_RADIUS * 1.15,
+        rSurface + this.pushDistFromPoster,
+      );
+      this.pushOrbitMidRadius = Math.max(
+        DIE_RADIUS * 1.6,
+        this.pushOrbitEndRadius + 0.42,
+      );
+
+      const { useVia } = this.prepareOrbitPath(
+        this.pushOrbitStartDir,
+        this.pushOrbitEndDir,
+        this.pushOrbitViaDir,
+      );
+      this.pushOrbitUseVia = useVia;
+
+      // Smooth direct push-in toward the dart's now front-facing poster
+      this.pushDuration = 1.65;
+      this.pushOrbitFrac = 0.0;
+    } else {
+      this.pushUseOrbit = false;
+      this.pushDuration = 2.5;
+    }
+
     const horizDist = Math.hypot(
       this.pushBezierP0.x - this.pushBezierP3.x,
       this.pushBezierP0.z - this.pushBezierP3.z,
     );
-    const arcClearance =
-      this.mode === 'darts' ? Math.max(0.6, horizDist * 0.14) : Math.max(3.2, horizDist * 0.42);
+    const arcClearance = Math.max(3.2, horizDist * 0.42);
 
     this.pushBezierP1
       .copy(this.pushBezierP0)
       .addScaledVector(UP_VECTOR, arcClearance * 0.75)
-      .addScaledVector(this.pushEndCamUp, this.mode === 'darts' ? 0.25 : Math.min(2.2, horizDist * 0.28));
+      .addScaledVector(this.pushEndCamUp, Math.min(2.2, horizDist * 0.28));
 
     this.pushBezierP2
       .copy(this.pushBezierP3)
-      .addScaledVector(this.pushOutwardNormal, this.mode === 'darts' ? 1.5 : 2.5);
+      .addScaledVector(this.pushOutwardNormal, 2.5);
 
     // Compute exact start & landing poses for the detached flat paper scrap
     this.cardStartPos.copy(diePos).addScaledVector(this.pushOutwardNormal, rSurface + 0.008);
@@ -1403,6 +1696,12 @@ diffuseColor.rgb *= (1.0 - clamp(vDentDepth * 4.5, 0.0, 0.14));
   }
 
   private disposeStuckDart(): void {
+    if (this.stuckDartXRay) {
+      this.stuckDartQuiverNode?.remove(this.stuckDartXRay.group);
+      this.stuckDartXRay.dispose();
+      this.stuckDartXRay = null;
+    }
+    this.xrayOpacity = 0;
     if (this.stuckDartPivot) {
       this.dieGroup?.remove(this.stuckDartPivot);
       this.stuckDartPivot = null;
@@ -1412,6 +1711,88 @@ diffuseColor.rgb *= (1.0 - clamp(vDentDepth * 4.5, 0.0, 0.14));
       this.stuckDartInstance.dispose();
       this.stuckDartInstance = null;
     }
+  }
+
+  private getStuckDartWorldPosition(out: THREE.Vector3, alongShaft = 0.14): boolean {
+    if (!this.stuckDartQuiverNode || !this.dieGroup) return false;
+    this.dieGroup.updateMatrixWorld(true);
+    // Pivot (0,0,0) is buried slightly at the needle tip; +Z along the quiver node extends out along the barrel/shaft
+    out.set(0, 0, alongShaft);
+    this.stuckDartQuiverNode.localToWorld(out);
+    return true;
+  }
+
+  private updateStuckDartXRay(dt: number, forceHide = false): void {
+    if (!this.stuckDartXRay) return;
+    if (forceHide || !this.stuckDartPivot || !this.stuckDartPivot.visible || !this.dieMesh) {
+      this.xrayOpacity = 0;
+      this.stuckDartXRay.setOpacity(0);
+      return;
+    }
+
+    let occluded = false;
+    if (this.getStuckDartWorldPosition(_dartWorldTmp, 0.12)) {
+      _dartRayDirTmp.subVectors(_dartWorldTmp, this.camera.position);
+      const distToDart = _dartRayDirTmp.length();
+      if (distToDart > 1e-4) {
+        _dartRayDirTmp.divideScalar(distToDart);
+        this.raycaster.set(this.camera.position, _dartRayDirTmp);
+        this.raycaster.near = 0.05;
+        this.raycaster.far = Math.max(0.1, distToDart - 0.04);
+        const hits = this.raycaster.intersectObject(this.dieMesh, false);
+        occluded = hits.length > 0;
+      }
+    }
+
+    const targetOpacity = occluded ? 1.0 : 0.0;
+    const dampRate = occluded ? 11.0 : 14.0;
+    this.xrayOpacity = THREE.MathUtils.damp(this.xrayOpacity, targetOpacity, dampRate, dt);
+    this.stuckDartXRay.setOpacity(this.xrayOpacity);
+  }
+
+  private prepareDartRotationReveal(): void {
+    if (!this.dieGroup) return;
+    const spec = this.posterSpecs[this.winnerMovieIndex];
+    const diePos = this.dieGroup.position;
+
+    this.dartRotateStartQuat.copy(this.dieGroup.quaternion);
+    this.dartRotateStartTarget.copy(this.controls.target);
+
+    // Direction from ball center straight toward the stationary camera
+    _v1.subVectors(this.camera.position, diePos);
+    if (_v1.lengthSq() < 1e-6) {
+      _v1.set(0, 0.08, 1);
+    }
+    _v1.normalize();
+
+    // Current world-space outward normal of the dart's winning poster
+    if (spec) {
+      _v2.copy(spec.center).applyQuaternion(this.dartRotateStartQuat).normalize();
+    } else if (this.stuckDartPivot) {
+      _v2.copy(this.stuckDartPivot.position).applyQuaternion(this.dartRotateStartQuat).normalize();
+    } else {
+      _v2.copy(_v1);
+    }
+
+    // Frame slightly from the side (~19 deg) so the dart's shaft and three flights remain clearly visible in profile
+    const sideSign = _v2.x < -0.08 ? -1 : 1;
+    _v3.copy(_v1).applyAxisAngle(UP_VECTOR, sideSign * 0.33).normalize();
+    if (_v3.y < 0.08) {
+      _v3.y = 0.08;
+      _v3.normalize();
+    }
+
+    // Pure shortest-path quaternion bringing the dart's poster normal directly to the side-framed front direction
+    const dot = THREE.MathUtils.clamp(_v2.dot(_v3), -1, 1);
+    if (dot < -0.9995) {
+      _dartDeltaQuat.setFromAxisAngle(UP_VECTOR, Math.PI);
+    } else {
+      _dartDeltaQuat.setFromUnitVectors(_v2, _v3);
+    }
+    this.dartRotateEndQuat.copy(_dartDeltaQuat).multiply(this.dartRotateStartQuat).normalize();
+
+    this.dartRotateDuration = 2.5;
+    this.dartRotateElapsed = 0;
   }
 
   private needsContinuousLoop(): boolean {
@@ -1542,6 +1923,7 @@ diffuseColor.rgb *= (1.0 - clamp(vDentDepth * 4.5, 0.0, 0.14));
   public skipRevealToFinal(): void {
     if (
       this.phase !== 'revealPause' &&
+      this.phase !== 'dartRotate' &&
       this.phase !== 'pushIn' &&
       this.phase !== 'liftUp' &&
       this.phase !== 'swapCrossfade' &&
@@ -1551,12 +1933,29 @@ diffuseColor.rgb *= (1.0 - clamp(vDentDepth * 4.5, 0.0, 0.14));
     }
 
     const wasInPause = this.phase === 'revealPause';
+    const needsDartRotationFinish =
+      this.mode === 'darts' && (this.phase === 'revealPause' || this.phase === 'dartRotate');
+
+    if (needsDartRotationFinish && this.dieGroup) {
+      this.dieGroup.quaternion.copy(this.dartRotateEndQuat);
+      this.dieBody.quaternion.set(
+        this.dieGroup.quaternion.x,
+        this.dieGroup.quaternion.y,
+        this.dieGroup.quaternion.z,
+        this.dieGroup.quaternion.w,
+      );
+      this.updateStuckDartXRay(0.016, true);
+      this.mountWinningPosterPatch(this.winnerMovieIndex);
+      this.computePushInCurve(this.winnerMovieIndex);
+    }
 
     this.camera.position.copy(this.pushBezierP3);
+    this.enforceCameraBallClearance();
     this.controls.target.copy(this.pushEndCamTarget);
-    this.camera.up.copy(this.pushEndCamUp);
+    this.setSafeCameraUp(this.pushEndCamUp, this.camera.position, this.controls.target);
     this.camera.lookAt(this.controls.target);
 
+    this.updateStuckDartXRay(0.016, true);
     if (this.stuckDartPivot) {
       this.stuckDartPivot.visible = false;
     }
@@ -1718,7 +2117,14 @@ diffuseColor.rgb *= (1.0 - clamp(vDentDepth * 4.5, 0.0, 0.14));
     this.stuckDartInstance.group.position.set(0, 0, -DART_TIP_Z);
     this.stuckDartInstance.group.rotation.z = this.dartRollAngle;
 
+    // Synchronized X-ray copy rendered with depthTest: false while dart is occluded behind the ball
+    this.stuckDartXRay = createXRayDartOverlay(this.stuckDartInstance.group);
+    this.stuckDartXRay.group.position.set(0, 0, -DART_TIP_Z);
+    this.stuckDartXRay.group.rotation.z = this.dartRollAngle;
+    this.xrayOpacity = 0;
+
     this.stuckDartQuiverNode.add(this.stuckDartInstance.group);
+    this.stuckDartQuiverNode.add(this.stuckDartXRay.group);
     this.stuckDartPivot.add(this.stuckDartQuiverNode);
     this.dieGroup.add(this.stuckDartPivot);
 
@@ -1798,8 +2204,10 @@ diffuseColor.rgb *= (1.0 - clamp(vDentDepth * 4.5, 0.0, 0.14));
       this.controls.target.x = THREE.MathUtils.damp(this.controls.target.x, desiredCamTarget.x, camLambda, dt);
       this.controls.target.y = THREE.MathUtils.damp(this.controls.target.y, desiredCamTarget.y, camLambda, dt);
       this.controls.target.z = THREE.MathUtils.damp(this.controls.target.z, desiredCamTarget.z, camLambda, dt);
+      this.enforceCameraBallClearance();
       this.camera.up.copy(UP_VECTOR);
       this.camera.lookAt(this.controls.target);
+      this.emitShadowBottomIfNeeded();
 
       if (
         this.camera.position.distanceToSquared(desiredCamPos) < 0.0004 &&
@@ -1809,11 +2217,15 @@ diffuseColor.rgb *= (1.0 - clamp(vDentDepth * 4.5, 0.0, 0.14));
         this.controls.target.copy(desiredCamTarget);
         this.camera.lookAt(this.controls.target);
         this.modeTransitioning = false;
+        this.emitShadowBottomIfNeeded();
       }
     }
 
     this.updateLightsForDie(this.dieGroup.position.x, this.dieGroup.position.z);
     this.updateContactShadow();
+    if (this.dartState === 'ready' && !this.modeTransitioning) {
+      this.emitShadowBottomIfNeeded();
+    }
 
     // 3. Autonomous wandering spin (or 2s impact slowdown)
     if (this.dartState === 'impactSlowdown') {
@@ -1843,8 +2255,11 @@ diffuseColor.rgb *= (1.0 - clamp(vDentDepth * 4.5, 0.0, 0.14));
       // Settle dent strength from initial impact peak down to a lasting puncture dimple
       this.dentStrengthUniform.value = THREE.MathUtils.lerp(1.0, 0.48, smoothstep(0, 0.4, this.impactElapsed));
 
+      // Keep X-ray silhouette synced if the slowing spin carries the dart behind the ball
+      this.updateStuckDartXRay(dt, false);
+
       if (u >= 1) {
-        // Ball has stopped spinning — start the exact reveal choreography targeting the dart's poster
+        // Ball has stopped spinning — prepare the stationary-camera ball rotation toward the dart
         this.dieBody.quaternion.set(
           this.dieGroup.quaternion.x,
           this.dieGroup.quaternion.y,
@@ -1852,8 +2267,7 @@ diffuseColor.rgb *= (1.0 - clamp(vDentDepth * 4.5, 0.0, 0.14));
           this.dieGroup.quaternion.w,
         );
         soundEffects.playSettleClick(this.muted);
-        this.mountWinningPosterPatch(this.winnerMovieIndex);
-        this.computePushInCurve(this.winnerMovieIndex);
+        this.prepareDartRotationReveal();
 
         this.pauseElapsed = 0;
         this.phase = 'revealPause';
@@ -2174,46 +2588,158 @@ diffuseColor.rgb *= (1.0 - clamp(vDentDepth * 4.5, 0.0, 0.14));
       }
       phaseNeedsLoop = true;
     } else if (this.phase === 'revealPause') {
-      // 1. Hold still for a 0.8s beat before camera moves
+      // 1. Hold still for a brief beat before reveal starts
       this.pauseElapsed += dt;
+      if (this.mode === 'darts') {
+        this.updateStuckDartXRay(dt, false);
+      }
       if (this.pauseElapsed >= this.pauseDuration) {
+        if (this.mode === 'darts') {
+          this.dartRotateElapsed = 0;
+          this.dartRotateStartTarget.copy(this.controls.target);
+          this.phase = 'dartRotate';
+          this.callbacks.onZoomStarted();
+        } else {
+          this.pushElapsed = 0;
+          this.phase = 'pushIn';
+          this.callbacks.onZoomStarted();
+        }
+      }
+      phaseNeedsLoop = true;
+    } else if (this.phase === 'dartRotate') {
+      // Darts mode: keep camera still and rotate the ball (2.5s ease-in-out shortest-path slerp)
+      // until the dart faces the camera (framed slightly from the side), blending lookAt to the dart in 0.4s.
+      this.dartRotateElapsed += dt;
+      const u = Math.min(1, this.dartRotateElapsed / this.dartRotateDuration);
+      const ease = u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
+
+      this.dieGroup.quaternion.slerpQuaternions(
+        this.dartRotateStartQuat,
+        this.dartRotateEndQuat,
+        ease,
+      );
+      this.dieBody.quaternion.set(
+        this.dieGroup.quaternion.x,
+        this.dieGroup.quaternion.y,
+        this.dieGroup.quaternion.z,
+        this.dieGroup.quaternion.w,
+      );
+
+      // Smoothly blend camera lookAt target from current view to the dart over the first 0.4s, then lock onto the dart
+      if (this.getStuckDartWorldPosition(_v1, 0.16)) {
+        const targetBlend = smoothstep(0.0, 0.4, this.dartRotateElapsed);
+        this.controls.target.lerpVectors(this.dartRotateStartTarget, _v1, targetBlend);
+      }
+
+      this.enforceCameraBallClearance();
+      this.camera.up.copy(UP_VECTOR);
+      this.camera.lookAt(this.controls.target);
+
+      // Show X-ray dart copy whenever the ball occludes the real dart, fading out as soon as it becomes visible
+      this.updateStuckDartXRay(dt, false);
+
+      if (u >= 1) {
+        this.dieGroup.quaternion.copy(this.dartRotateEndQuat);
+        this.dieBody.quaternion.set(
+          this.dieGroup.quaternion.x,
+          this.dieGroup.quaternion.y,
+          this.dieGroup.quaternion.z,
+          this.dieGroup.quaternion.w,
+        );
+        if (this.getStuckDartWorldPosition(_v1, 0.16)) {
+          this.controls.target.copy(_v1);
+          this.camera.lookAt(this.controls.target);
+        }
+
+        // Now mount winning poster patch and push smoothly straight in toward the dart's poster
+        this.mountWinningPosterPatch(this.winnerMovieIndex);
+        this.computePushInCurve(this.winnerMovieIndex);
         this.pushElapsed = 0;
         this.phase = 'pushIn';
-        this.callbacks.onZoomStarted();
       }
       phaseNeedsLoop = true;
     } else if (this.phase === 'pushIn') {
-      // 2. Camera glides slowly up and toward top poster (2.5s power2.inOut)
+      // 2. Camera glides to the winning poster (Darts: direct front-side push-in; Dice: Bezier)
       this.pushElapsed += dt;
       const u = Math.min(1, this.pushElapsed / this.pushDuration);
-      const power2InOut = u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
 
-      this.evalCubicBezier(
-        power2InOut,
-        this.pushBezierP0,
-        this.pushBezierP1,
-        this.pushBezierP2,
-        this.pushBezierP3,
-        this.camera.position,
-      );
+      if (this.pushUseOrbit) {
+        const diePos = this.dieGroup.position;
+        const ease = u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
 
-      this.controls.target.lerpVectors(
-        this.pushStartCamTarget,
-        this.pushEndCamTarget,
-        smoothstep(0.0, 0.82, u),
-      );
+        this.evalOrbitDirection(
+          ease,
+          this.pushOrbitStartDir,
+          this.pushOrbitEndDir,
+          this.pushOrbitViaDir,
+          this.pushOrbitUseVia,
+          _orbitDirOut,
+        );
 
-      _v1
-        .lerpVectors(this.pushStartCamUp, this.pushEndCamUp, smoothstep(0.08, 0.94, u))
-        .normalize();
-      this.camera.up.copy(_v1);
-      this.camera.lookAt(this.controls.target);
+        const curRadius = THREE.MathUtils.lerp(
+          this.pushOrbitStartRadius,
+          this.pushOrbitEndRadius,
+          ease,
+        );
+
+        this.camera.position.copy(diePos).addScaledVector(_orbitDirOut, curRadius);
+
+        if (this.camera.position.y < 0.34) {
+          this.camera.position.y = 0.34;
+          _v3.subVectors(this.camera.position, diePos);
+          if (_v3.lengthSq() > 1e-6) {
+            _v3.normalize().multiplyScalar(curRadius);
+            this.camera.position.copy(diePos).add(_v3);
+          }
+        }
+
+        // Smoothly transition lookAt from the dart's barrel to the winning poster center right beneath it
+        this.controls.target.lerpVectors(
+          this.pushStartCamTarget,
+          this.pushEndCamTarget,
+          smoothstep(0.0, 0.85, u),
+        );
+
+        _v1
+          .lerpVectors(this.pushStartCamUp, this.pushEndCamUp, smoothstep(0.1, 0.95, u))
+          .normalize();
+        this.enforceCameraBallClearance();
+        this.setSafeCameraUp(_v1, this.camera.position, this.controls.target);
+        this.camera.lookAt(this.controls.target);
+        this.updateStuckDartXRay(dt, false);
+      } else {
+        const power2InOut = u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
+
+        this.evalCubicBezier(
+          power2InOut,
+          this.pushBezierP0,
+          this.pushBezierP1,
+          this.pushBezierP2,
+          this.pushBezierP3,
+          this.camera.position,
+        );
+
+        this.controls.target.lerpVectors(
+          this.pushStartCamTarget,
+          this.pushEndCamTarget,
+          smoothstep(0.0, 0.82, u),
+        );
+
+        _v1
+          .lerpVectors(this.pushStartCamUp, this.pushEndCamUp, smoothstep(0.08, 0.94, u))
+          .normalize();
+        this.enforceCameraBallClearance();
+        this.setSafeCameraUp(_v1, this.camera.position, this.controls.target);
+        this.camera.lookAt(this.controls.target);
+      }
 
       if (u >= 1) {
         this.camera.position.copy(this.pushBezierP3);
+        this.enforceCameraBallClearance();
         this.controls.target.copy(this.pushEndCamTarget);
-        this.camera.up.copy(this.pushEndCamUp);
+        this.setSafeCameraUp(this.pushEndCamUp, this.camera.position, this.controls.target);
         this.camera.lookAt(this.controls.target);
+        this.updateStuckDartXRay(dt, true);
 
         if (this.winnerScrapMesh) {
           this.winnerScrapMesh.visible = true;
@@ -2242,6 +2768,8 @@ diffuseColor.rgb *= (1.0 - clamp(vDentDepth * 4.5, 0.0, 0.14));
       this.liftElapsed += dt;
       const u = Math.min(1, this.liftElapsed / this.liftDuration);
       const liftEase = 1 - Math.pow(1 - u, 2); // power2.out
+
+      this.updateStuckDartXRay(dt, true);
 
       if (this.winnerScrapMesh) {
         this.winnerScrapMesh.position.lerpVectors(
@@ -2391,34 +2919,107 @@ diffuseColor.rgb *= (1.0 - clamp(vDentDepth * 4.5, 0.0, 0.14));
         );
       }
 
-      // Smoothly fly camera back to normal view (1.5s)
+      // Smoothly fly camera back to normal view (Darts: orbit around outside of ball; Dice: Bezier)
       const camU = smoothstep(this.returnHadCleanImg ? 0.2 : 0.15, 1.0, u);
       const camEase =
         camU < 0.5 ? 4 * camU * camU * camU : 1 - Math.pow(-2 * camU + 2, 3) / 2;
 
-      this.evalCubicBezier(
-        camEase,
-        this.returnBezierP0,
-        this.returnBezierP1,
-        this.returnBezierP2,
-        this.returnBezierP3,
-        this.camera.position,
-      );
+      if (this.returnUseOrbit) {
+        const diePos = this.dieGroup.position;
+        const pullOutFrac = 0.22;
+        if (camU <= pullOutFrac) {
+          // Pull straight back off the poster surface to orbit altitude first
+          const tOut = camU / pullOutFrac;
+          const outEase = tOut * tOut * (3 - 2 * tOut);
+          const curRadius = THREE.MathUtils.lerp(
+            this.returnOrbitStartRadius,
+            this.returnOrbitMidRadius,
+            outEase,
+          );
+          this.camera.position
+            .copy(diePos)
+            .addScaledVector(this.returnOrbitStartDir, curRadius);
+          this.controls.target.lerpVectors(
+            this.returnStartCamTarget,
+            diePos,
+            outEase * 0.5,
+          );
+          this.enforceCameraBallClearance();
+          this.setSafeCameraUp(this.returnStartCamUp, this.camera.position, this.controls.target);
+          this.camera.lookAt(this.controls.target);
+        } else {
+          // Spherical slerp orbit around the outside of the ball back to resting darts pose
+          const tOrbit = (camU - pullOutFrac) / (1 - pullOutFrac);
+          const dirEase =
+            tOrbit < 0.5 ? 2 * tOrbit * tOrbit : 1 - Math.pow(-2 * tOrbit + 2, 2) / 2;
+          const radEase = smoothstep(0.12, 1.0, tOrbit);
+          const curRadius = THREE.MathUtils.lerp(
+            this.returnOrbitMidRadius,
+            this.returnOrbitEndRadius,
+            radEase * radEase * (3 - 2 * radEase),
+          );
 
-      this.controls.target.lerpVectors(
-        this.returnStartCamTarget,
-        this.returnEndCamTarget,
-        camEase,
-      );
+          this.evalOrbitDirection(
+            dirEase,
+            this.returnOrbitStartDir,
+            this.returnOrbitEndDir,
+            this.returnOrbitViaDir,
+            this.returnOrbitUseVia,
+            _orbitDirOut,
+          );
 
-      _v1
-        .lerpVectors(this.returnStartCamUp, this.returnEndCamUp, smoothstep(0.1, 0.9, camU))
-        .normalize();
-      this.camera.up.copy(_v1);
-      this.camera.lookAt(this.controls.target);
+          this.camera.position.copy(diePos).addScaledVector(_orbitDirOut, curRadius);
+
+          if (this.camera.position.y < 0.34) {
+            this.camera.position.y = 0.34;
+            _v3.subVectors(this.camera.position, diePos);
+            if (_v3.lengthSq() > 1e-6) {
+              _v3.normalize().multiplyScalar(curRadius);
+              this.camera.position.copy(diePos).add(_v3);
+            }
+          }
+
+          _v2.lerpVectors(this.returnStartCamTarget, diePos, 0.5 + 0.5 * smoothstep(0, 0.35, tOrbit));
+          this.controls.target.lerpVectors(
+            _v2,
+            this.returnEndCamTarget,
+            smoothstep(0.35, 1.0, tOrbit),
+          );
+
+          _v1
+            .lerpVectors(this.returnStartCamUp, this.returnEndCamUp, smoothstep(0.08, 0.9, tOrbit))
+            .normalize();
+          this.enforceCameraBallClearance();
+          this.setSafeCameraUp(_v1, this.camera.position, this.controls.target);
+          this.camera.lookAt(this.controls.target);
+        }
+      } else {
+        this.evalCubicBezier(
+          camEase,
+          this.returnBezierP0,
+          this.returnBezierP1,
+          this.returnBezierP2,
+          this.returnBezierP3,
+          this.camera.position,
+        );
+
+        this.controls.target.lerpVectors(
+          this.returnStartCamTarget,
+          this.returnEndCamTarget,
+          camEase,
+        );
+
+        _v1
+          .lerpVectors(this.returnStartCamUp, this.returnEndCamUp, smoothstep(0.1, 0.9, camU))
+          .normalize();
+        this.enforceCameraBallClearance();
+        this.setSafeCameraUp(_v1, this.camera.position, this.controls.target);
+        this.camera.lookAt(this.controls.target);
+      }
 
       if (u >= 1) {
         this.camera.position.copy(this.returnBezierP3);
+        this.enforceCameraBallClearance();
         this.controls.target.copy(this.returnEndCamTarget);
         this.camera.up.copy(UP_VECTOR);
         this.camera.lookAt(this.controls.target);
@@ -2434,6 +3035,7 @@ diffuseColor.rgb *= (1.0 - clamp(vDentDepth * 4.5, 0.0, 0.14));
           this.controls.enabled = false;
           this.handAnchor.visible = true;
           this.phase = 'idle';
+          this.emitShadowBottomIfNeeded();
           this.callbacks.onDartActivityChange?.(false);
           this.callbacks.onReturnComplete();
           phaseNeedsLoop = true;
@@ -2442,6 +3044,7 @@ diffuseColor.rgb *= (1.0 - clamp(vDentDepth * 4.5, 0.0, 0.14));
           this.controls.enabled = true;
           this.controls.update();
           this.phase = 'idle';
+          this.emitShadowBottomIfNeeded();
           this.callbacks.onReturnComplete();
           phaseNeedsLoop = false;
         }
@@ -2492,7 +3095,9 @@ diffuseColor.rgb *= (1.0 - clamp(vDentDepth * 4.5, 0.0, 0.14));
           this.controls.target.x = THREE.MathUtils.damp(this.controls.target.x, this.dieGroup.position.x, 6.0, dt);
           this.controls.target.y = THREE.MathUtils.damp(this.controls.target.y, this.camTargetY, 6.0, dt);
           this.controls.target.z = THREE.MathUtils.damp(this.controls.target.z, this.dieGroup.position.z, 6.0, dt);
+          this.enforceCameraBallClearance();
           this.camera.lookAt(this.controls.target);
+          this.emitShadowBottomIfNeeded();
 
           const onFloor =
             this.dieBody.position.y <= DIE_RADIUS + 0.025 &&
@@ -2513,6 +3118,7 @@ diffuseColor.rgb *= (1.0 - clamp(vDentDepth * 4.5, 0.0, 0.14));
             this.diceReturnSettling = false;
             this.controls.enabled = true;
             this.controls.update();
+            this.emitShadowBottomIfNeeded();
           } else {
             phaseNeedsLoop = true;
           }
@@ -2570,6 +3176,7 @@ diffuseColor.rgb *= (1.0 - clamp(vDentDepth * 4.5, 0.0, 0.14));
 
     if (
       this.phase === 'revealPause' ||
+      this.phase === 'dartRotate' ||
       this.phase === 'pushIn' ||
       this.phase === 'liftUp' ||
       this.phase === 'swapCrossfade' ||
@@ -2785,11 +3392,13 @@ diffuseColor.rgb *= (1.0 - clamp(vDentDepth * 4.5, 0.0, 0.14));
         );
         this.controls.update();
       }
+      this.emitShadowBottomIfNeeded();
     } else if (this.phase === 'revealed' && this.dieGroup) {
       this.updateCardLandingPose(width, height);
       this.camera.position.copy(this.pushBezierP3);
-      this.camera.up.copy(this.pushEndCamUp);
+      this.enforceCameraBallClearance();
       this.controls.target.copy(this.pushEndCamTarget);
+      this.setSafeCameraUp(this.pushEndCamUp, this.camera.position, this.controls.target);
       this.camera.lookAt(this.controls.target);
 
       if (this.winnerScrapMesh) {
