@@ -77,19 +77,6 @@
   animation: hintBob 2s ease-in-out infinite;
 }
 
-@keyframes scrapSpin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-.animate-scrap-spin {
-  animation: scrapSpin 7s linear infinite;
-}
-
 .mode-btn {
   background: transparent;
   border: none;
@@ -164,8 +151,7 @@
   .animate-dialog-button,
   .animate-clean-poster-in,
   .animate-clean-poster-settle,
-  .animate-hint-bob,
-  .animate-scrap-spin {
+  .animate-hint-bob {
     animation: none;
     opacity: 1;
     transform: none;

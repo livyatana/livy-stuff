@@ -728,89 +728,96 @@ export default function App() {
         </footer>
       )}
 
-      {/* Bottom-Left Controls: Subtle Sound Toggle above About Link & Attribution Popover */}
+      {/* Bottom Bar: Sound Toggle & About · Last Updated (Bottom-Left) + Faces Count (Bottom-Right) */}
       {!isSyncing && !isBaking && (
         <div
-          ref={aboutContainerRef}
           style={{
-            left: '16px',
+            left: 'calc(16px + env(safe-area-inset-left, 0px))',
+            right: 'calc(16px + env(safe-area-inset-right, 0px))',
             bottom: 'calc(16px + env(safe-area-inset-bottom, 0px))',
           }}
-          className={`fixed z-30 flex flex-col items-start gap-0.5 transition-opacity duration-500 ${
-            hideChromeForReveal ? 'pointer-events-none opacity-0' : 'pointer-events-auto opacity-100'
+          className={`pointer-events-none fixed z-30 flex flex-col gap-0.5 transition-opacity duration-500 ${
+            hideChromeForReveal ? 'opacity-0' : 'opacity-100'
           }`}
         >
-          {aboutOpen && (
-            <div
-              id="about-popover"
-              role="dialog"
-              aria-label="About Luis's Big Movie Dice"
-              className="absolute bottom-full left-0 mb-2.5 w-[264px] sm:w-[292px] rounded-xl border border-black/10 bg-white p-4 text-[12px] leading-relaxed text-[#4E525D] shadow-[0_10px_30px_rgba(0,0,0,0.09)]"
-            >
-              <p className="text-[#111215]">
-                made by livy · movie data &amp; posters from TMDB.
-              </p>
-              <p className="mt-1.5">
-                This product uses the TMDB API but is not endorsed or certified by TMDB.
-              </p>
-              <a
-                href="https://www.themoviedb.org/"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="The Movie Database (TMDB)"
-                className="mt-3 inline-block opacity-90 transition-opacity hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black rounded-xs"
-              >
-                <img
-                  src="https://www.themoviedb.org/assets/2/v4/logos/v2/blue_short-8e7b30f73a4020692ccca9c88bafe5dcb6f8a62a4c6bc55cd9ba82bb2cd95f6c.svg"
-                  alt="TMDB"
-                  className="h-[14px] w-auto"
-                />
-              </a>
-            </div>
-          )}
-
           <button
             type="button"
             onClick={() => setMuted((m) => !m)}
             aria-label={muted ? 'Unmute sound effects' : 'Mute sound effects'}
             title={muted ? 'Unmute sounds' : 'Mute sounds'}
-            className="flex h-10 w-10 items-center justify-start rounded-lg border-0 bg-transparent p-0 text-[#9a9da6] transition-colors duration-150 hover:text-[#4E525D] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black/40 cursor-pointer"
+            className={`flex h-10 w-10 items-center justify-start rounded-lg border-0 bg-transparent p-0 text-[#9a9da6] transition-colors duration-150 hover:text-[#4E525D] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black/40 cursor-pointer ${
+              hideChromeForReveal ? 'pointer-events-none' : 'pointer-events-auto'
+            }`}
           >
             {muted ? <VolumeX className="h-[18px] w-[18px]" /> : <Volume2 className="h-[18px] w-[18px]" />}
           </button>
 
-          <div className="flex flex-col-reverse items-start gap-0.5 min-[460px]:flex-row min-[460px]:items-baseline min-[460px]:gap-2">
-            <button
-              type="button"
-              onClick={() => setAboutOpen((open) => !open)}
-              aria-expanded={aboutOpen}
-              aria-controls="about-popover"
-              className="shrink-0 bg-transparent border-0 p-0 text-[11px] font-normal text-[#bbbbbb] opacity-50 transition-opacity duration-150 hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black/40 rounded-xs cursor-pointer"
-            >
-              about
-            </button>
+          <div className="flex flex-wrap-reverse items-baseline justify-between gap-x-3 gap-y-0.5">
+            <div className="flex items-baseline gap-2 min-w-0">
+              <div ref={aboutContainerRef} className="relative shrink-0">
+                {aboutOpen && (
+                  <div
+                    id="about-popover"
+                    role="dialog"
+                    aria-label="About Luis's Big Movie Dice"
+                    className={`absolute bottom-full left-0 mb-[52px] w-[264px] sm:w-[292px] rounded-xl border border-black/10 bg-white p-4 text-[12px] leading-relaxed text-[#4E525D] shadow-[0_10px_30px_rgba(0,0,0,0.09)] ${
+                      hideChromeForReveal ? 'pointer-events-none' : 'pointer-events-auto'
+                    }`}
+                  >
+                    <p className="text-[#111215]">
+                      made by livy · movie data &amp; posters from TMDB.
+                    </p>
+                    <p className="mt-1.5">
+                      This product uses the TMDB API but is not endorsed or certified by TMDB.
+                    </p>
+                    <a
+                      href="https://www.themoviedb.org/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label="The Movie Database (TMDB)"
+                      className="mt-3 inline-block opacity-90 transition-opacity hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black rounded-xs"
+                    >
+                      <img
+                        src="https://www.themoviedb.org/assets/2/v4/logos/v2/blue_short-8e7b30f73a4020692ccca9c88bafe5dcb6f8a62a4c6bc55cd9ba82bb2cd95f6c.svg"
+                        alt="TMDB"
+                        className="h-[14px] w-auto"
+                      />
+                    </a>
+                  </div>
+                )}
 
-            {(lastUpdatedLabel || movies.length > 0) && (
-              <>
-                <span
-                  aria-hidden="true"
-                  className="hidden min-[460px]:inline shrink-0 text-[11px] text-[#bbbbbb] opacity-60 select-none"
+                <button
+                  type="button"
+                  onClick={() => setAboutOpen((open) => !open)}
+                  aria-expanded={aboutOpen}
+                  aria-controls="about-popover"
+                  className={`shrink-0 bg-transparent border-0 p-0 text-[11px] font-normal text-[#bbbbbb] opacity-50 transition-opacity duration-150 hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black/40 rounded-xs cursor-pointer ${
+                    hideChromeForReveal ? 'pointer-events-none' : 'pointer-events-auto'
+                  }`}
                 >
-                  ·
-                </span>
-                <div className="flex flex-col items-start">
-                  {lastUpdatedLabel && (
-                    <span className="font-luis-hand inline-block whitespace-nowrap text-[15px] sm:text-[18px] leading-tight text-[#999999] select-none">
-                      {lastUpdatedLabel}
-                    </span>
-                  )}
-                  {movies.length > 0 && (
-                    <span className="font-luis-hand inline-block whitespace-nowrap text-[15px] sm:text-[18px] leading-tight text-[#999999] select-none">
-                      {`${movies.length} ${movies.length === 1 ? 'face' : 'faces'} now`}
-                    </span>
-                  )}
-                </div>
-              </>
+                  about
+                </button>
+              </div>
+
+              {lastUpdatedLabel && (
+                <>
+                  <span
+                    aria-hidden="true"
+                    className="shrink-0 text-[11px] text-[#bbbbbb] opacity-60 select-none"
+                  >
+                    ·
+                  </span>
+                  <span className="font-luis-hand inline-block whitespace-nowrap text-[15px] sm:text-[18px] leading-tight text-[#999999] select-none">
+                    {lastUpdatedLabel}
+                  </span>
+                </>
+              )}
+            </div>
+
+            {movies.length > 0 && (
+              <span className="font-luis-hand ml-auto inline-block whitespace-nowrap text-[15px] sm:text-[18px] leading-tight text-[#999999] select-none">
+                {`${movies.length} ${movies.length === 1 ? 'face' : 'faces'} now`}
+              </span>
             )}
           </div>
         </div>

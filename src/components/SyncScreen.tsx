@@ -15,32 +15,6 @@ interface SyncScreenProps {
 const HAND_DRAWN_BAR_PATH =
   'M 10 5.4 C 74 3.9, 138 6.3, 206 4.7 C 266 3.5, 312 5.9, 349.5 5.1 Q 355.5 5.2, 355.2 13.8 Q 355.8 22.4, 349.2 22.9 C 292 24.3, 232 21.7, 168 23.4 C 108 24.8, 56 22.2, 10.6 23.1 Q 4.6 22.9, 5.1 14.2 Q 4.4 5.9, 10 5.4 Z';
 
-function PaperScrapIcon() {
-  return (
-    <svg
-      viewBox="0 0 28 28"
-      fill="none"
-      aria-hidden="true"
-      className="animate-scrap-spin h-6 w-6 sm:h-7 sm:w-7 shrink-0 text-[#111215]"
-    >
-      <path
-        d="M5.5 4.8 L20.8 3.9 L23.2 18.6 L20.1 20.5 L18.3 23.4 L14.8 22.1 L12.2 24.2 L8.7 22.4 L5.8 23.5 L4.6 13.2 Z"
-        fill="#ffffff"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M9.2 9.2 L17.4 8.7 M9.4 13.4 L16.2 13.1 M9.7 17.3 L13.8 17.1"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
 function HandDrawnProgressBar({ pct }: { pct: number }) {
   const clipId = useId();
   const clamped = Math.max(0, Math.min(100, pct));
@@ -177,12 +151,9 @@ export function SyncScreen({
             </div>
           ) : (
             <div>
-              <div className="flex items-center justify-center gap-3">
-                <PaperScrapIcon />
-                <p className="font-luis-hand text-[28px] sm:text-[32px] leading-[1.1] text-[#111215]">
-                  {headingLabel}
-                </p>
-              </div>
+              <p className="font-luis-hand text-[28px] sm:text-[32px] leading-[1.1] text-[#111215]">
+                {headingLabel}
+              </p>
 
               <HandDrawnProgressBar pct={pct} />
 
