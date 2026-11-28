@@ -29,7 +29,7 @@ function formatRuntime(minutes: number | null | undefined): string | null {
   const mins = total % 60;
   if (hours === 0) return `${mins}m`;
   if (mins === 0) return `${hours}h`;
-  return `${hours}h ${mins}m`;
+  return `${hours}h\u00A0${mins}m`;
 }
 
 export function RevealOverlay({
@@ -43,7 +43,9 @@ export function RevealOverlay({
 }: RevealOverlayProps) {
   const mountedAtRef = useRef<number>(performance.now());
   const cardRef = useRef<HTMLDivElement | null>(null);
+  const infoLineRef = useRef<HTMLParagraphElement | null>(null);
   const [cardHeight, setCardHeight] = useState(320);
+  const [mobileInfoScale, setMobileInfoScale] = useState(1);
 
   useEffect(() => {
     mountedAtRef.current = performance.now();
@@ -55,6 +57,19 @@ export function RevealOverlay({
     const measure = () => {
       const h = el.offsetHeight;
       if (h > 0) setCardHeight(h);
+
+      const infoEl = infoLineRef.current;
+      if (infoEl && layout.isNarrow) {
+        const availableW = el.clientWidth - 44; // matches p-[22px] horizontal padding
+        const naturalW = infoEl.scrollWidth;
+        if (availableW > 0 && naturalW > availableW) {
+          setMobileInfoScale(Math.max(0.72, availableW / naturalW));
+        } else {
+          setMobileInfoScale(1);
+        }
+      } else {
+        setMobileInfoScale(1);
+      }
     };
     measure();
     if (typeof ResizeObserver !== 'undefined') {
@@ -160,7 +175,7 @@ export function RevealOverlay({
         <div
           ref={cardRef}
           style={{ '--dialog-delay': dialogDelayMs } as CSSProperties}
-          className={`reveal-dialog-font animate-dialog-rise max-h-[calc(100vh-24px)] overflow-y-auto rounded-[14px] bg-[#FF2EB8] p-[22px] sm:p-[36px] shadow-[0_0_24px_rgba(255,46,184,0.6),0_0_60px_rgba(255,46,184,0.35)] flex flex-col gap-[14px] sm:gap-[18px] ${
+          className={`reveal-dialog-font animate-dialog-rise max-h-[calc(100vh-24px)] overflow-y-auto overflow-x-hidden rounded-[14px] bg-[#FF2EB8] p-[22px] sm:p-[36px] shadow-[0_0_24px_rgba(255,46,184,0.6),0_0_60px_rgba(255,46,184,0.35)] flex flex-col gap-[10px] sm:gap-[18px] ${
             layout.isNarrow ? 'items-center text-center' : 'items-start text-left'
           }`}
         >
@@ -169,11 +184,19 @@ export function RevealOverlay({
           </h2>
 
           {infoParts.length > 0 && (
-            <p className="text-[clamp(21px,6.5vw,26px)] sm:text-[36px] font-normal leading-[1.15] text-black/85">
+            <p
+              ref={infoLineRef}
+              style={
+                layout.isNarrow && mobileInfoScale < 1
+                  ? { transform: `scale(${mobileInfoScale})`, transformOrigin: 'center center' }
+                  : undefined
+              }
+              className="-my-[2px] sm:my-0 whitespace-nowrap sm:whitespace-normal text-[32px] sm:text-[36px] font-normal leading-[1.05] sm:leading-[1.15] text-black/85"
+            >
               {infoParts.map((part, idx) => (
                 <Fragment key={`${part}-${idx}`}>
                   {idx > 0 && (
-                    <span className="mx-2 text-black/45" aria-hidden="true">
+                    <span className="mx-1.5 sm:mx-2 text-black/45" aria-hidden="true">
                       ·
                     </span>
                   )}

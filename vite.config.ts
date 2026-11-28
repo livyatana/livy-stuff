@@ -49,6 +49,7 @@ export default defineConfig(() => {
         workbox: {
           globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2,json}'],
           globIgnores: ['**/assets/aistudio/**', '**/data/**'],
+          ignoreURLParametersMatching: [/^utm_/, /^fbclid$/, /^v$/],
           maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
           cleanupOutdatedCaches: true,
           runtimeCaching: [
