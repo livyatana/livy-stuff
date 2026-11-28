@@ -12,45 +12,45 @@ jobs:
   update-watchlist:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout main repository
+      - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js 22
         uses: actions/setup-node@v4
         with:
           node-version: 22
 
-      - name: Prepare watchlist-data branch worktree
+      - name: Prepare watchlist-data branch
         run: |
-          DATA_DIR="${RUNNER_TEMP}/watchlist-data"
-          rm -rf "${DATA_DIR}"
-          if git ls-remote --exit-code --heads origin watchlist-data >/dev/null 2>&1; then
-            echo "Found existing watchlist-data branch."
-            git fetch --depth=1 origin watchlist-data
-            git worktree add -B watchlist-data "${DATA_DIR}" FETCH_HEAD
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git ls-remote --exit-code --heads origin watchlist-data; then
+            git fetch origin watchlist-data
+            git worktree add data-branch origin/watchlist-data
+            cd data-branch && git checkout -B watchlist-data
           else
-            echo "No watchlist-data branch found — creating orphan branch."
-            git worktree add --detach "${DATA_DIR}" HEAD
-            git -C "${DATA_DIR}" checkout --orphan watchlist-data
-            git -C "${DATA_DIR}" rm -rf . >/dev/null 2>&1 || true
+            git worktree add --detach data-branch
+            cd data-branch
+            git checkout --orphan watchlist-data
+            git rm -rf --quiet . || true
+            cp ../public/data/movies.json ../public/data/version.json .
           fi
-          echo "WATCHLIST_DATA_DIR=${DATA_DIR}" >> "${GITHUB_ENV}"
 
       - name: Sync Letterboxd watchlist with TMDB
         env:
           TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
-          WATCHLIST_DATA_DIR: ${{ env.WATCHLIST_DATA_DIR }}
+          WATCHLIST_DATA_DIR: data-branch
         run: node scripts/update-watchlist.mjs
 
-      - name: Commit and push to watchlist-data branch
+      - name: Push to watchlist-data branch
+        working-directory: data-branch
         run: |
-          cd "${WATCHLIST_DATA_DIR}"
-          if [ -n "$(git status --porcelain movies.json version.json)" ]; then
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add movies.json version.json
-            git commit -m "chore: daily watchlist update"
-            git push --force origin HEAD:refs/heads/watchlist-data
-          else
-            echo "No changes to commit on watchlist-data."
+          git add movies.json version.json
+          if git diff --cached --quiet; then
+            echo "No changes"
+            exit 0
           fi
+          git commit -m "chore: watchlist data update"
+          git push origin watchlist-data

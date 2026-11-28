@@ -574,7 +574,6 @@ export default function App() {
 
   const hideChromeForReveal = isZoomedReveal || Boolean(revealedMovie) || Boolean(swapMovie);
   const isMobileViewport = viewportSize.w < 768;
-  const stackLastUpdated = viewportSize.w < 460;
   const lastUpdatedLabel = watchlistUpdatedAt ? formatLastUpdated(watchlistUpdatedAt) : null;
   const estimatedHintHeight = mode === 'darts' ? 24 : isMobileViewport ? 32 : 44;
   const minBottomClearance = isMobileViewport ? 120 : 28;
@@ -779,13 +778,7 @@ export default function App() {
             {muted ? <VolumeX className="h-[18px] w-[18px]" /> : <Volume2 className="h-[18px] w-[18px]" />}
           </button>
 
-          {lastUpdatedLabel && stackLastUpdated && (
-            <span className="font-luis-hand whitespace-nowrap text-[15px] leading-tight text-[#999999] select-none">
-              {lastUpdatedLabel}
-            </span>
-          )}
-
-          <div className="flex items-baseline gap-2">
+          <div className="flex flex-col-reverse items-start gap-0.5 min-[460px]:flex-row min-[460px]:items-baseline min-[460px]:gap-2">
             <button
               type="button"
               onClick={() => setAboutOpen((open) => !open)}
@@ -796,15 +789,15 @@ export default function App() {
               about
             </button>
 
-            {lastUpdatedLabel && !stackLastUpdated && (
+            {lastUpdatedLabel && (
               <>
                 <span
                   aria-hidden="true"
-                  className="shrink-0 text-[11px] text-[#bbbbbb] opacity-60 select-none"
+                  className="hidden min-[460px]:inline shrink-0 text-[11px] text-[#bbbbbb] opacity-60 select-none"
                 >
                   ·
                 </span>
-                <span className="font-luis-hand whitespace-nowrap text-[15px] sm:text-[18px] leading-none text-[#999999] select-none">
+                <span className="font-luis-hand inline-block whitespace-nowrap text-[15px] sm:text-[18px] leading-tight text-[#999999] select-none">
                   {lastUpdatedLabel}
                 </span>
               </>
