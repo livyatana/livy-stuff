@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { resolvePosterUrl } from '../services/tmdbSync';
 import type { MovieRecord } from '../types/movie';
 
 const TMDB_W185 = 'https://image.tmdb.org/t/p/w185';
@@ -1058,7 +1059,7 @@ export async function bakeCollageCubeMap(
         if (ptr >= toFetch.length) break;
         const { m, idx } = toFetch[ptr];
         try {
-          loadedImages[idx] = await loadW185Image(`${TMDB_W185}${m.poster_path}`);
+          loadedImages[idx] = await loadW185Image(resolvePosterUrl(m.poster_path, 'w185'));
         } catch {
           loadedImages[idx] = null;
         }
@@ -1440,7 +1441,7 @@ export function createWinningPosterTextures(
   shadowTexture.needsUpdate = true;
 
   if (movie.poster_path && !movie.isPreviewFallback) {
-    void loadW185Image(`${TMDB_W780}${movie.poster_path}`)
+    void loadW185Image(resolvePosterUrl(movie.poster_path, 'w780'))
       .then((img) => {
         if (signal?.aborted) return;
         paintComposite(img);

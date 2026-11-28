@@ -14,6 +14,7 @@ import {
   readStoredWatchlistVersion,
   recordRolledMovie,
   resetRollHistory,
+  resolvePosterUrl,
   saveStoredWatchlistVersion,
   tryLoadStaticMoviesJson,
 } from './services/tmdbSync';
@@ -295,7 +296,7 @@ export default function App() {
     const cached = preloadedPosterUrlsRef.current.get(movie.id);
     if (cached) return cached;
     if (movie.poster_path && !movie.isPreviewFallback) {
-      const url = `https://image.tmdb.org/t/p/original${movie.poster_path}`;
+      const url = resolvePosterUrl(movie.poster_path, 'original');
       preloadedPosterUrlsRef.current.set(movie.id, url);
       return url;
     }
@@ -789,7 +790,7 @@ export default function App() {
               about
             </button>
 
-            {lastUpdatedLabel && (
+            {(lastUpdatedLabel || movies.length > 0) && (
               <>
                 <span
                   aria-hidden="true"
@@ -797,9 +798,18 @@ export default function App() {
                 >
                   ·
                 </span>
-                <span className="font-luis-hand inline-block whitespace-nowrap text-[15px] sm:text-[18px] leading-tight text-[#999999] select-none">
-                  {lastUpdatedLabel}
-                </span>
+                <div className="flex flex-col items-start">
+                  {lastUpdatedLabel && (
+                    <span className="font-luis-hand inline-block whitespace-nowrap text-[15px] sm:text-[18px] leading-tight text-[#999999] select-none">
+                      {lastUpdatedLabel}
+                    </span>
+                  )}
+                  {movies.length > 0 && (
+                    <span className="font-luis-hand inline-block whitespace-nowrap text-[15px] sm:text-[18px] leading-tight text-[#999999] select-none">
+                      {`${movies.length} ${movies.length === 1 ? 'face' : 'faces'} now`}
+                    </span>
+                  )}
+                </div>
               </>
             )}
           </div>
@@ -827,7 +837,7 @@ export default function App() {
               !swapMovie.isPreviewFallback &&
               swapImgSrc.includes('/t/p/original')
             ) {
-              const w780Url = `https://image.tmdb.org/t/p/w780${swapMovie.poster_path}`;
+              const w780Url = resolvePosterUrl(swapMovie.poster_path, 'w780');
               preloadedPosterUrlsRef.current.set(swapMovie.id, w780Url);
               setSwapImgSrc(w780Url);
               return;

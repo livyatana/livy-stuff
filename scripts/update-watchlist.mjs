@@ -29,6 +29,7 @@ const MOVIES_PATH = path.join(OUTPUT_DIR, 'movies.json');
 const VERSION_PATH = path.join(OUTPUT_DIR, 'version.json');
 const FALLBACK_MOVIES_PATH = path.join(ROOT_DIR, 'public', 'data', 'movies.json');
 const FALLBACK_VERSION_PATH = path.join(ROOT_DIR, 'public', 'data', 'version.json');
+const OVERRIDES_PATH = path.join(ROOT_DIR, 'public', 'data', 'overrides.json');
 const WATCHLIST_BRANCH = 'watchlist-data';
 
 const LETTERBOXD_USER = 'ruche794';
@@ -362,6 +363,142 @@ async function lookupFilmOnTmdb(film, apiKey) {
   return record;
 }
 
+function parseTmdbUrl(urlStr) {
+  if (typeof urlStr !== 'string') return null;
+  const match = urlStr.trim().match(/themoviedb\.org\/(movie|tv)\/(\d+)/i);
+  if (!match) return null;
+  const mediaType = match[1].toLowerCase() === 'tv' ? 'tv' : 'movie';
+  const id = Number.parseInt(match[2], 10);
+  if (!Number.isFinite(id) || id <= 0) return null;
+  return { id, mediaType };
+}
+
+function parseOverrideEntry(entry) {
+  if (!entry) return null;
+
+  if (typeof entry === 'string') {
+    const parsedUrl = parseTmdbUrl(entry);
+    return parsedUrl ? { ...parsedUrl, customPoster: null } : null;
+  }
+
+  if (typeof entry !== 'object' || Array.isArray(entry)) {
+    return null;
+  }
+
+  const customPoster =
+    typeof entry.poster === 'string' && entry.poster.trim().length > 0
+      ? entry.poster.trim()
+      : null;
+
+  if (typeof entry.tmdb === 'string') {
+    const parsedUrl = parseTmdbUrl(entry.tmdb);
+    if (parsedUrl) {
+      return { ...parsedUrl, customPoster };
+    }
+  }
+
+  const sourceObj =
+    entry.tmdb && typeof entry.tmdb === 'object' && !Array.isArray(entry.tmdb)
+      ? entry.tmdb
+      : entry;
+
+  const rawId =
+    typeof sourceObj.id === 'number'
+      ? sourceObj.id
+      : typeof sourceObj.id === 'string'
+        ? Number.parseInt(sourceObj.id, 10)
+        : NaN;
+
+  if (!Number.isFinite(rawId) || rawId <= 0) {
+    return null;
+  }
+
+  const rawType = String(sourceObj.type ?? sourceObj.media_type ?? 'movie')
+    .trim()
+    .toLowerCase();
+  const mediaType = rawType === 'tv' ? 'tv' : 'movie';
+
+  return {
+    id: Math.trunc(rawId),
+    mediaType,
+    customPoster,
+  };
+}
+
+async function fetchOverrideFromTmdb(film, parsedOverride, apiKey) {
+  const { id, mediaType, customPoster } = parsedOverride;
+  const detailPath = mediaType === 'tv' ? `/tv/${id}` : `/movie/${id}`;
+  const details = await tmdbFetchJson(detailPath, {}, apiKey);
+  await sleep(TMDB_REQUEST_DELAY_MS);
+
+  const posterPath = customPoster || (typeof details.poster_path === 'string' && details.poster_path ? details.poster_path : '');
+  if (!posterPath) {
+    return null;
+  }
+
+  let genre = null;
+  if (Array.isArray(details.genres) && details.genres.length > 0 && details.genres[0]?.name) {
+    genre = String(details.genres[0].name).trim();
+  }
+
+  let runtime = null;
+  if (mediaType === 'movie' && typeof details.runtime === 'number' && details.runtime > 0) {
+    runtime = Math.round(details.runtime);
+  }
+
+  const record = {
+    id: typeof details.id === 'number' ? details.id : id,
+    title: (mediaType === 'tv' ? details.name : details.title) || film.title,
+    year:
+      film.year ||
+      extractYear(mediaType === 'tv' ? details.first_air_date : details.release_date) ||
+      '',
+    poster_path: posterPath,
+    overview: typeof details.overview === 'string' ? details.overview : '',
+    vote_average: typeof details.vote_average === 'number' ? details.vote_average : 0,
+    media_type: mediaType,
+  };
+
+  if (genre) record.genre = genre;
+  if (mediaType === 'movie' && runtime) record.runtime = runtime;
+
+  return record;
+}
+
+function formatUnmatchedEntry(film) {
+  return {
+    name: film.year ? `${film.title} (${film.year})` : film.title,
+    slug: film.slug || '',
+  };
+}
+
+function recordSignature(movie) {
+  return JSON.stringify([
+    movie.id,
+    movie.media_type === 'tv' ? 'tv' : 'movie',
+    movie.title || '',
+    String(movie.year || ''),
+    movie.poster_path || '',
+    movie.genre || '',
+    movie.runtime ?? null,
+  ]);
+}
+
+async function loadOverridesFromMain() {
+  const raw = await readJsonFileIfExists(OVERRIDES_PATH);
+  if (raw === null) return new Map();
+  if (typeof raw !== 'object' || Array.isArray(raw)) {
+    throw new Error(`Invalid overrides.json at ${OVERRIDES_PATH}: expected a JSON object keyed by slug.`);
+  }
+  const map = new Map();
+  for (const [slug, value] of Object.entries(raw)) {
+    const cleanSlug = slug.trim();
+    if (!cleanSlug || cleanSlug.startsWith('_')) continue;
+    map.set(cleanSlug, value);
+  }
+  return map;
+}
+
 function buildExistingMatcher(existingMovies) {
   const byTitleYear = new Map();
   const byTitle = new Map();
@@ -479,6 +616,10 @@ async function loadPreviousData(filename, outputPath, fallbackPath) {
 async function main() {
   const apiKey = process.env.TMDB_API_KEY?.trim();
 
+  // Always load manual overrides from main's public/data/overrides.json
+  const overridesBySlug = await loadOverridesFromMain();
+  console.log(`Loaded ${overridesBySlug.size} manual override(s) from public/data/overrides.json`);
+
   // Load previous movies.json and version.json from watchlist-data branch (fallback: public/data/*)
   const prevMoviesRes = await loadPreviousData('movies.json', MOVIES_PATH, FALLBACK_MOVIES_PATH);
   const existingMovies = Array.isArray(prevMoviesRes.data) ? prevMoviesRes.data : [];
@@ -513,9 +654,16 @@ async function main() {
   const findExisting = buildExistingMatcher(existingMovies);
   const matchedExistingKeys = new Set();
   const keptMovies = [];
+  const overrideFilmsToResolve = [];
   const newFilmsToLookup = [];
 
   for (const film of scrapedFilms) {
+    // Always prioritize manual overrides by slug (even if an existing match already exists)
+    if (film.slug && overridesBySlug.has(film.slug)) {
+      overrideFilmsToResolve.push({ film, rawOverride: overridesBySlug.get(film.slug) });
+      continue;
+    }
+
     const existing = findExisting(film);
     if (existing) {
       const key = recordKey(existing);
@@ -528,26 +676,74 @@ async function main() {
     }
   }
 
-  const removedMovies = existingMovies.filter((m) => !matchedExistingKeys.has(recordKey(m)));
   console.log(
-    `Comparison: ${keptMovies.length} kept, ${newFilmsToLookup.length} new to look up, ${removedMovies.length} removed.`,
+    `Comparison: ${keptMovies.length} kept, ${overrideFilmsToResolve.length} override(s) to apply, ${newFilmsToLookup.length} new to look up.`,
   );
 
-  if (newFilmsToLookup.length > 0 && !apiKey) {
-    console.error('Aborting without changes — TMDB_API_KEY environment variable is required to look up new films.');
+  if ((newFilmsToLookup.length > 0 || overrideFilmsToResolve.length > 0) && !apiKey) {
+    console.error(
+      'Aborting without changes — TMDB_API_KEY environment variable is required to resolve new or overridden films.',
+    );
     process.exit(1);
   }
 
+  const resolvedOverrideMovies = [];
   const addedMovies = [];
-  const skippedNoPoster = [];
+  const unmatched = [];
   const finalSeenKeys = new Set(keptMovies.map(recordKey));
 
+  // 1. Resolve manual overrides first so they always take precedence over auto-matches
+  for (let i = 0; i < overrideFilmsToResolve.length; i++) {
+    const { film, rawOverride } = overrideFilmsToResolve[i];
+    const parsedOverride = parseOverrideEntry(rawOverride);
+    if (!parsedOverride) {
+      console.warn(`  ! Invalid override entry for slug "${film.slug}" — marking as unmatched.`);
+      unmatched.push(formatUnmatchedEntry(film));
+      continue;
+    }
+
+    try {
+      const resolved = await fetchOverrideFromTmdb(film, parsedOverride, apiKey);
+      if (!resolved) {
+        console.warn(
+          `  ! Override for "${film.slug}" (${parsedOverride.mediaType}/${parsedOverride.id}) has no poster — marking as unmatched.`,
+        );
+        unmatched.push(formatUnmatchedEntry(film));
+        continue;
+      }
+      const key = recordKey(resolved);
+      if (finalSeenKeys.has(key)) {
+        // Replace any kept entry with the exact override record
+        const existingIdx = keptMovies.findIndex((m) => recordKey(m) === key);
+        if (existingIdx !== -1) {
+          keptMovies[existingIdx] = resolved;
+        }
+        continue;
+      }
+      finalSeenKeys.add(key);
+      resolvedOverrideMovies.push(resolved);
+      console.log(
+        `  * [override ${i + 1}/${overrideFilmsToResolve.length}] ${resolved.title} (${resolved.year}) [${resolved.media_type}/${resolved.id}]`,
+      );
+    } catch (err) {
+      if (err?.fatal) {
+        console.error(`Aborting without changes — ${err.message}`);
+        process.exit(1);
+      }
+      console.warn(
+        `  ! Failed TMDB override fetch for "${film.slug}" (${parsedOverride.mediaType}/${parsedOverride.id}): ${err.message}`,
+      );
+      unmatched.push(formatUnmatchedEntry(film));
+    }
+  }
+
+  // 2. Resolve new films via TMDB search
   for (let i = 0; i < newFilmsToLookup.length; i++) {
     const film = newFilmsToLookup[i];
     try {
       const resolved = await lookupFilmOnTmdb(film, apiKey);
       if (!resolved) {
-        skippedNoPoster.push(`${film.title}${film.year ? ` (${film.year})` : ''}`);
+        unmatched.push(formatUnmatchedEntry(film));
         continue;
       }
       const key = recordKey(resolved);
@@ -563,15 +759,19 @@ async function main() {
         process.exit(1);
       }
       console.warn(`  ! Failed TMDB lookup for "${film.title}" (${film.year}): ${err.message}`);
+      unmatched.push(formatUnmatchedEntry(film));
     }
   }
 
-  if (skippedNoPoster.length > 0) {
-    console.log(`Skipped ${skippedNoPoster.length} unmatched or posterless titles.`);
+  if (unmatched.length > 0) {
+    console.log(`Unmatched or posterless titles (${unmatched.length}):`);
+    for (const item of unmatched) {
+      console.log(`  - ${item.name} [${item.slug}]`);
+    }
   }
 
-  // Final list: newly added films + kept existing films (preserving existing order for stability)
-  const nextMovies = [...addedMovies, ...keptMovies];
+  // Final list: newly added & overridden films + kept existing films (preserving existing order for stability)
+  const nextMovies = [...addedMovies, ...resolvedOverrideMovies, ...keptMovies];
 
   // Double safety check before writing
   if (existingMovies.length > 0 && nextMovies.length < existingMovies.length * 0.5) {
@@ -581,18 +781,21 @@ async function main() {
     process.exit(1);
   }
 
-  // Detect whether the film set actually changed
-  const prevKeySet = new Set(existingMovies.map(recordKey));
-  const nextKeySet = new Set(nextMovies.map(recordKey));
-  let hasChanged = prevKeySet.size !== nextKeySet.size;
+  // Detect whether the film set or any overridden film's key fields changed
+  const prevByKey = new Map(existingMovies.map((m) => [recordKey(m), recordSignature(m)]));
+  const nextByKey = new Map(nextMovies.map((m) => [recordKey(m), recordSignature(m)]));
+  let hasChanged = prevByKey.size !== nextByKey.size;
   if (!hasChanged) {
-    for (const k of nextKeySet) {
-      if (!prevKeySet.has(k)) {
+    for (const [k, sig] of nextByKey.entries()) {
+      if (prevByKey.get(k) !== sig) {
         hasChanged = true;
         break;
       }
     }
   }
+
+  const removedCount = [...prevByKey.keys()].filter((k) => !nextByKey.has(k)).length;
+  const addedCount = [...nextByKey.keys()].filter((k) => !prevByKey.has(k)).length;
 
   const nowIso = new Date().toISOString();
   const previousUpdated =
@@ -608,6 +811,8 @@ async function main() {
     updated: hasChanged ? nowIso : (previousUpdated ?? nowIso),
     checked: nowIso,
     count: finalMovies.length,
+    watchlistCount: scrapedFilms.length,
+    unmatched,
   };
 
   await fs.mkdir(OUTPUT_DIR, { recursive: true });
@@ -618,7 +823,7 @@ async function main() {
 
   if (hasChanged) {
     console.log(
-      `Updated ${MOVIES_PATH} (${finalMovies.length} movies: +${addedMovies.length}, -${removedMovies.length}) and ${VERSION_PATH}.`,
+      `Updated ${MOVIES_PATH} (${finalMovies.length} movies: +${addedCount}, -${removedCount}, ${resolvedOverrideMovies.length} override(s)) and ${VERSION_PATH}.`,
     );
   } else if (!outputMoviesExists) {
     console.log(

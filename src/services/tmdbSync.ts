@@ -21,6 +21,19 @@ export interface WatchlistVersionPayload {
   updated: string;
   checked?: string;
   count?: number;
+  watchlistCount?: number;
+}
+
+export function resolvePosterUrl(
+  posterPath: string,
+  size: 'w185' | 'w780' | 'original' = 'w185',
+): string {
+  const trimmed = posterPath.trim();
+  if (!trimmed) return '';
+  if (/^(https?:\/\/|data:|blob:|\.\/)/i.test(trimmed)) {
+    return trimmed;
+  }
+  return `https://image.tmdb.org/t/p/${size}${trimmed}`;
 }
 
 export function parseWatchlistCsv(csvText: string): WatchlistRow[] {
