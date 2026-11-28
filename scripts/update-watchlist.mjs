@@ -3,14 +3,17 @@
  * Daily Letterboxd watchlist sync script (Node 22+, zero external dependencies).
  *
  * Fetches https://letterboxd.com/ruche794/watchlist/page/N/ across all pages,
- * compares against public/data/movies.json, resolves new films via TMDB
+ * compares against previous movies.json from the watchlist-data branch
+ * (falling back to public/data/movies.json), resolves new films via TMDB
  * (movie search with year -> without year -> TV search, plus details for genre/runtime),
- * removes films no longer on the watchlist, and writes public/data/movies.json
- * and public/data/version.json only when changes are detected.
+ * removes films no longer on the watchlist, only rewrites movies.json when
+ * something changed (or when seeding an empty output directory), and ALWAYS writes
+ * version.json ({ updated, checked, count }) on every successful run.
  *
  * Requires: process.env.TMDB_API_KEY (never written to disk or logged).
  */
 
+import { execFileSync } from 'node:child_process';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -18,8 +21,15 @@ import { fileURLToPath } from 'node:url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, '..');
-const MOVIES_PATH = path.join(ROOT_DIR, 'public', 'data', 'movies.json');
-const VERSION_PATH = path.join(ROOT_DIR, 'public', 'data', 'version.json');
+const HAS_CUSTOM_DATA_DIR = Boolean(process.env.WATCHLIST_DATA_DIR?.trim());
+const OUTPUT_DIR = HAS_CUSTOM_DATA_DIR
+  ? path.resolve(process.env.WATCHLIST_DATA_DIR.trim())
+  : path.join(ROOT_DIR, 'public', 'data');
+const MOVIES_PATH = path.join(OUTPUT_DIR, 'movies.json');
+const VERSION_PATH = path.join(OUTPUT_DIR, 'version.json');
+const FALLBACK_MOVIES_PATH = path.join(ROOT_DIR, 'public', 'data', 'movies.json');
+const FALLBACK_VERSION_PATH = path.join(ROOT_DIR, 'public', 'data', 'version.json');
+const WATCHLIST_BRANCH = 'watchlist-data';
 
 const LETTERBOXD_USER = 'ruche794';
 const LETTERBOXD_PAGE_DELAY_MS = 1500;
@@ -201,6 +211,12 @@ async function tmdbFetchJson(endpointPath, params, apiKey) {
       const retryAfter = Number(res.headers.get('retry-after')) || 2;
       await sleep((retryAfter + 0.5) * 1000);
       continue;
+    }
+
+    if (res.status === 401 || res.status === 403) {
+      const err = new Error(`TMDB authentication failed (HTTP ${res.status}) for ${endpointPath}`);
+      err.fatal = true;
+      throw err;
     }
 
     if (!res.ok) {
@@ -398,24 +414,82 @@ function recordKey(movie) {
   return `${mediaType}:${movie.id}`;
 }
 
-async function main() {
-  const apiKey = process.env.TMDB_API_KEY?.trim();
-
-  // Load existing movies.json
-  let existingMovies = [];
+async function fileExists(filePath) {
   try {
-    const raw = await fs.readFile(MOVIES_PATH, 'utf8');
-    const parsed = JSON.parse(raw);
-    if (Array.isArray(parsed)) {
-      existingMovies = parsed;
-    }
+    await fs.access(filePath);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function readJsonFileIfExists(filePath) {
+  try {
+    const raw = await fs.readFile(filePath, 'utf8');
+    return JSON.parse(raw);
   } catch (err) {
-    if (err.code !== 'ENOENT') {
-      throw err;
+    if (err.code === 'ENOENT') return null;
+    throw err;
+  }
+}
+
+function readJsonFromWatchlistBranch(filename) {
+  const refs = [`origin/${WATCHLIST_BRANCH}`, WATCHLIST_BRANCH];
+  for (const ref of refs) {
+    try {
+      const raw = execFileSync('git', ['show', `${ref}:${filename}`], {
+        cwd: ROOT_DIR,
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'ignore'],
+      });
+      if (raw && raw.trim()) {
+        return { data: JSON.parse(raw), source: `git:${ref}:${filename}` };
+      }
+    } catch {
+      // Branch or file doesn't exist in git; continue to next source
+    }
+  }
+  return null;
+}
+
+async function loadPreviousData(filename, outputPath, fallbackPath) {
+  // 1. If running against a dedicated WATCHLIST_DATA_DIR (the watchlist-data branch worktree), read from it first
+  if (HAS_CUSTOM_DATA_DIR) {
+    const fromOutput = await readJsonFileIfExists(outputPath);
+    if (fromOutput !== null) {
+      return { data: fromOutput, source: outputPath };
     }
   }
 
-  console.log(`Loaded ${existingMovies.length} existing movies from public/data/movies.json`);
+  // 2. Try reading directly from the watchlist-data git branch (for local runs or unseeded worktrees)
+  const fromBranch = readJsonFromWatchlistBranch(filename);
+  if (fromBranch !== null) {
+    return fromBranch;
+  }
+
+  // 3. Fallback to public/data/<filename>
+  const fromFallback = await readJsonFileIfExists(fallbackPath);
+  if (fromFallback !== null) {
+    return { data: fromFallback, source: fallbackPath };
+  }
+
+  return { data: null, source: null };
+}
+
+async function main() {
+  const apiKey = process.env.TMDB_API_KEY?.trim();
+
+  // Load previous movies.json and version.json from watchlist-data branch (fallback: public/data/*)
+  const prevMoviesRes = await loadPreviousData('movies.json', MOVIES_PATH, FALLBACK_MOVIES_PATH);
+  const existingMovies = Array.isArray(prevMoviesRes.data) ? prevMoviesRes.data : [];
+
+  const prevVersionRes = await loadPreviousData('version.json', VERSION_PATH, FALLBACK_VERSION_PATH);
+  const previousVersion =
+    prevVersionRes.data && typeof prevVersionRes.data === 'object' ? prevVersionRes.data : null;
+
+  console.log(
+    `Loaded ${existingMovies.length} existing movies from ${prevMoviesRes.source ?? 'none (starting fresh)'}`,
+  );
 
   // Scrape Letterboxd watchlist
   let scrapedFilms;
@@ -484,6 +558,10 @@ async function main() {
         `  + [${i + 1}/${newFilmsToLookup.length}] ${resolved.title} (${resolved.year}) [${resolved.media_type}]`,
       );
     } catch (err) {
+      if (err?.fatal) {
+        console.error(`Aborting without changes — ${err.message}`);
+        process.exit(1);
+      }
       console.warn(`  ! Failed TMDB lookup for "${film.title}" (${film.year}): ${err.message}`);
     }
   }
@@ -516,23 +594,41 @@ async function main() {
     }
   }
 
-  if (!hasChanged) {
-    console.log('No watchlist changes detected — exiting without writing.');
-    return;
-  }
+  const nowIso = new Date().toISOString();
+  const previousUpdated =
+    typeof previousVersion?.updated === 'string' && previousVersion.updated.trim().length > 0
+      ? previousVersion.updated.trim()
+      : null;
+
+  const finalMovies = hasChanged ? nextMovies : existingMovies;
+  const outputMoviesExists = await fileExists(MOVIES_PATH);
+  const shouldWriteMovies = hasChanged || !outputMoviesExists;
 
   const versionPayload = {
-    updated: new Date().toISOString(),
-    count: nextMovies.length,
+    updated: hasChanged ? nowIso : (previousUpdated ?? nowIso),
+    checked: nowIso,
+    count: finalMovies.length,
   };
 
-  await fs.mkdir(path.dirname(MOVIES_PATH), { recursive: true });
-  await fs.writeFile(MOVIES_PATH, `${JSON.stringify(nextMovies, null, 2)}\n`, 'utf8');
+  await fs.mkdir(OUTPUT_DIR, { recursive: true });
+  if (shouldWriteMovies) {
+    await fs.writeFile(MOVIES_PATH, `${JSON.stringify(finalMovies, null, 2)}\n`, 'utf8');
+  }
   await fs.writeFile(VERSION_PATH, `${JSON.stringify(versionPayload, null, 2)}\n`, 'utf8');
 
-  console.log(
-    `Updated public/data/movies.json (${nextMovies.length} movies: +${addedMovies.length}, -${removedMovies.length}) and public/data/version.json.`,
-  );
+  if (hasChanged) {
+    console.log(
+      `Updated ${MOVIES_PATH} (${finalMovies.length} movies: +${addedMovies.length}, -${removedMovies.length}) and ${VERSION_PATH}.`,
+    );
+  } else if (!outputMoviesExists) {
+    console.log(
+      `No watchlist changes detected — seeded ${MOVIES_PATH} (${finalMovies.length} movies) and updated checked timestamp in ${VERSION_PATH}.`,
+    );
+  } else {
+    console.log(
+      `No watchlist changes detected — kept existing movies.json and updated checked timestamp in ${VERSION_PATH}.`,
+    );
+  }
 }
 
 main().catch((err) => {

@@ -42,6 +42,31 @@ interface HoverTooltipState {
 }
 
 const MODE_STORAGE_KEY = 'movieDieMode_v1';
+const SHORT_MONTHS = [
+  'jan',
+  'feb',
+  'mar',
+  'apr',
+  'may',
+  'jun',
+  'jul',
+  'aug',
+  'sep',
+  'oct',
+  'nov',
+  'dec',
+] as const;
+
+function formatLastUpdated(isoString: string): string | null {
+  const date = new Date(isoString);
+  if (Number.isNaN(date.getTime())) return null;
+
+  const day = date.getDate();
+  const month = SHORT_MONTHS[date.getMonth()];
+  const hh = String(date.getHours()).padStart(2, '0');
+  const mm = String(date.getMinutes()).padStart(2, '0');
+  return `last updated: ${day} ${month}, ${hh}:${mm}`;
+}
 
 function readInitialMode(): GameMode {
   try {
@@ -100,6 +125,7 @@ export default function App() {
   const [muted, setMuted] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
   const aboutContainerRef = useRef<HTMLDivElement | null>(null);
+  const [watchlistUpdatedAt, setWatchlistUpdatedAt] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const toastTimerRef = useRef<number | null>(null);
   const [contextLost, setContextLost] = useState(false);
@@ -193,6 +219,8 @@ export default function App() {
     try {
       const remoteVersion = await fetchWatchlistVersion(controller.signal);
       if (controller.signal.aborted) return;
+
+      setWatchlistUpdatedAt(remoteVersion?.checked ?? remoteVersion?.updated ?? null);
 
       const storedVersion = readStoredWatchlistVersion();
       if (remoteVersion?.updated && storedVersion !== remoteVersion.updated) {
@@ -546,6 +574,8 @@ export default function App() {
 
   const hideChromeForReveal = isZoomedReveal || Boolean(revealedMovie) || Boolean(swapMovie);
   const isMobileViewport = viewportSize.w < 768;
+  const stackLastUpdated = viewportSize.w < 460;
+  const lastUpdatedLabel = watchlistUpdatedAt ? formatLastUpdated(watchlistUpdatedAt) : null;
   const estimatedHintHeight = mode === 'darts' ? 24 : isMobileViewport ? 32 : 44;
   const minBottomClearance = isMobileViewport ? 120 : 28;
   const maxHintTop = Math.max(150, viewportSize.h - minBottomClearance - estimatedHintHeight);
@@ -749,15 +779,37 @@ export default function App() {
             {muted ? <VolumeX className="h-[18px] w-[18px]" /> : <Volume2 className="h-[18px] w-[18px]" />}
           </button>
 
-          <button
-            type="button"
-            onClick={() => setAboutOpen((open) => !open)}
-            aria-expanded={aboutOpen}
-            aria-controls="about-popover"
-            className="bg-transparent border-0 p-0 text-[11px] font-normal text-[#bbbbbb] opacity-50 transition-opacity duration-150 hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black/40 rounded-xs cursor-pointer"
-          >
-            about
-          </button>
+          {lastUpdatedLabel && stackLastUpdated && (
+            <span className="font-luis-hand whitespace-nowrap text-[15px] leading-tight text-[#999999] select-none">
+              {lastUpdatedLabel}
+            </span>
+          )}
+
+          <div className="flex items-baseline gap-2">
+            <button
+              type="button"
+              onClick={() => setAboutOpen((open) => !open)}
+              aria-expanded={aboutOpen}
+              aria-controls="about-popover"
+              className="shrink-0 bg-transparent border-0 p-0 text-[11px] font-normal text-[#bbbbbb] opacity-50 transition-opacity duration-150 hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black/40 rounded-xs cursor-pointer"
+            >
+              about
+            </button>
+
+            {lastUpdatedLabel && !stackLastUpdated && (
+              <>
+                <span
+                  aria-hidden="true"
+                  className="shrink-0 text-[11px] text-[#bbbbbb] opacity-60 select-none"
+                >
+                  ·
+                </span>
+                <span className="font-luis-hand whitespace-nowrap text-[15px] sm:text-[18px] leading-none text-[#999999] select-none">
+                  {lastUpdatedLabel}
+                </span>
+              </>
+            )}
+          </div>
         </div>
       )}
 

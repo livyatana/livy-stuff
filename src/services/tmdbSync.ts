@@ -12,8 +12,14 @@ export const HISTORY_STORAGE_KEY = 'movieDieHistory_v1';
 export const WATCHLIST_VERSION_STORAGE_KEY = 'movieDieWatchlistVersion_v1';
 export const RECENT_HISTORY_LIMIT = 50;
 
+export const REMOTE_WATCHLIST_BASE_URL =
+  'https://raw.githubusercontent.com/livyatana/livy-stuff/watchlist-data';
+export const REMOTE_MOVIES_URL = `${REMOTE_WATCHLIST_BASE_URL}/movies.json`;
+export const REMOTE_VERSION_URL = `${REMOTE_WATCHLIST_BASE_URL}/version.json`;
+
 export interface WatchlistVersionPayload {
   updated: string;
+  checked?: string;
   count?: number;
 }
 
@@ -94,33 +100,47 @@ export function clearCachedMovies(): void {
   }
 }
 
-export async function fetchWatchlistVersion(
+function parseWatchlistVersionPayload(data: unknown): WatchlistVersionPayload | null {
+  if (!data || typeof data !== 'object') return null;
+  const payload = data as { updated?: unknown; checked?: unknown; count?: unknown };
+  const updated = typeof payload.updated === 'string' ? payload.updated.trim() : '';
+  if (!updated) return null;
+
+  const checked =
+    typeof payload.checked === 'string' && payload.checked.trim().length > 0
+      ? payload.checked.trim()
+      : undefined;
+
+  return {
+    updated,
+    checked,
+    count: typeof payload.count === 'number' ? payload.count : undefined,
+  };
+}
+
+async function fetchVersionFromUrl(
+  url: string,
   signal?: AbortSignal,
 ): Promise<WatchlistVersionPayload | null> {
   try {
-    const res = await fetch('./data/version.json', { cache: 'no-cache', signal });
+    const res = await fetch(url, { cache: 'no-store', signal });
     if (!res.ok) return null;
     const data = (await res.json()) as unknown;
-    if (
-      data &&
-      typeof data === 'object' &&
-      'updated' in data &&
-      typeof (data as { updated: unknown }).updated === 'string' &&
-      (data as { updated: string }).updated.trim().length > 0
-    ) {
-      const payload = data as { updated: string; count?: unknown };
-      return {
-        updated: payload.updated.trim(),
-        count: typeof payload.count === 'number' ? payload.count : undefined,
-      };
-    }
-    return null;
+    return parseWatchlistVersionPayload(data);
   } catch (err) {
     if (err instanceof DOMException && err.name === 'AbortError') {
       throw err;
     }
     return null;
   }
+}
+
+export async function fetchWatchlistVersion(
+  signal?: AbortSignal,
+): Promise<WatchlistVersionPayload | null> {
+  const remote = await fetchVersionFromUrl(REMOTE_VERSION_URL, signal);
+  if (remote) return remote;
+  return fetchVersionFromUrl('./data/version.json', signal);
 }
 
 export function readStoredWatchlistVersion(): string | null {
@@ -139,32 +159,45 @@ export function saveStoredWatchlistVersion(updated: string): void {
   }
 }
 
-export async function tryLoadStaticMoviesJson(
+function parseMoviesPayload(data: unknown): MovieRecord[] | null {
+  if (Array.isArray(data) && data.length > 0 && 'poster_path' in data[0]) {
+    return data as MovieRecord[];
+  }
+  if (
+    data &&
+    typeof data === 'object' &&
+    'movies' in data &&
+    Array.isArray((data as { movies: unknown[] }).movies)
+  ) {
+    const movies = (data as { movies: MovieRecord[] }).movies;
+    return movies.length > 0 ? movies : null;
+  }
+  return null;
+}
+
+async function fetchMoviesFromUrl(
+  url: string,
   signal?: AbortSignal,
 ): Promise<MovieRecord[] | null> {
   try {
-    const res = await fetch('./data/movies.json', { cache: 'no-cache', signal });
+    const res = await fetch(url, { cache: 'no-store', signal });
     if (!res.ok) return null;
     const data = (await res.json()) as unknown;
-    if (Array.isArray(data) && data.length > 0 && 'poster_path' in data[0]) {
-      return data as MovieRecord[];
-    }
-    if (
-      data &&
-      typeof data === 'object' &&
-      'movies' in data &&
-      Array.isArray((data as { movies: unknown[] }).movies)
-    ) {
-      const movies = (data as { movies: MovieRecord[] }).movies;
-      return movies.length > 0 ? movies : null;
-    }
-    return null;
+    return parseMoviesPayload(data);
   } catch (err) {
     if (err instanceof DOMException && err.name === 'AbortError') {
       throw err;
     }
     return null;
   }
+}
+
+export async function tryLoadStaticMoviesJson(
+  signal?: AbortSignal,
+): Promise<MovieRecord[] | null> {
+  const remote = await fetchMoviesFromUrl(REMOTE_MOVIES_URL, signal);
+  if (remote) return remote;
+  return fetchMoviesFromUrl('./data/movies.json', signal);
 }
 
 export function buildWatchlistPreviewMovies(rows: WatchlistRow[]): MovieRecord[] {

@@ -54,6 +54,22 @@ export default defineConfig(() => {
           cleanupOutdatedCaches: true,
           runtimeCaching: [
             {
+              urlPattern:
+                /^https:\/\/raw\.githubusercontent\.com\/livyatana\/livy-stuff\/watchlist-data\/(movies|version)\.json$/i,
+              handler: 'NetworkFirst',
+              options: {
+                cacheName: 'remote-watchlist-data-cache',
+                networkTimeoutSeconds: 5,
+                expiration: {
+                  maxEntries: 10,
+                  maxAgeSeconds: 60 * 60 * 24 * 30,
+                },
+                cacheableResponse: {
+                  statuses: [0, 200],
+                },
+              },
+            },
+            {
               urlPattern: /\/data\//i,
               handler: 'NetworkFirst',
               options: {
