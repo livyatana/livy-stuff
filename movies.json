@@ -1,27 +1,5 @@
 [
   {
-    "id": 133919,
-    "title": "Scenes from a Marriage",
-    "year": "1974",
-    "poster_path": "/ArKEdvJesIktFX8OAhcdKAOLl6I.jpg",
-    "overview": "Johan and Marianne are married and seem to have it all. Their happiness, however, is a façade for a troubled relationship, which becomes even rockier when Johan admits that he's having an affair. Before long, the spouses separate and move towards finalizing their divorce, but they make attempts at reconciling. Even as they pursue other relationships, Johan and Marianne realize that they have a significant bond, but also many issues that hinder that connection.",
-    "vote_average": 8,
-    "media_type": "movie",
-    "genre": "Drama",
-    "runtime": 169
-  },
-  {
-    "id": 26302,
-    "title": "The Color of Pomegranates",
-    "year": "1969",
-    "poster_path": "/rMUbQf7RgsYgQ47AFf1wpoSt4dX.jpg",
-    "overview": "The life of the revered 18th-century Armenian poet and musician Sayat-Nova. Portraying events in the life of the artist from childhood up to his death, the movie addresses in particular his relationships with women, including his muse. The production tells Sayat-Nova's dramatic story by using both his poems and largely still camerawork, creating a work hailed as revolutionary by Mikhail Vartanov.",
-    "vote_average": 7.334,
-    "media_type": "movie",
-    "genre": "History",
-    "runtime": 80
-  },
-  {
     "id": 1256221,
     "title": "Samuel: Hollywood vs Hollywood",
     "year": "2024",
@@ -39,17 +17,6 @@
     "overview": "A Behind-the-Scenes Look at the Making of the HBO Series “The Penguin”",
     "vote_average": 0,
     "media_type": "movie"
-  },
-  {
-    "id": 497603,
-    "title": "A Bloody Finger in Your Mouth",
-    "year": "2017",
-    "poster_path": "/uzrVFq6w4dUXbSwqphoBVwaKt7j.jpg",
-    "overview": "A short documentary about the making of Twin Peaks: The Return. This time focused in the planing and technical execution of some particular scenes.",
-    "vote_average": 6,
-    "media_type": "movie",
-    "genre": "Documentary",
-    "runtime": 27
   },
   {
     "id": 51859,
@@ -344,6 +311,58 @@
     "vote_average": 7.452,
     "media_type": "movie",
     "genre": "Drama",
+    "runtime": 80
+  },
+  {
+    "id": 58957,
+    "title": "Nathan for You",
+    "year": "2017",
+    "poster_path": "/nuyeyn2ZY5UOvklQinHsQnhs1QN.jpg",
+    "overview": "Nathan Fielder uses his business degree and life experiences to help real small businesses turn a profit.",
+    "vote_average": 8.237,
+    "media_type": "tv",
+    "genre": "Comedy"
+  },
+  {
+    "id": 342451,
+    "title": "Twin Peaks (2017)",
+    "year": "2017",
+    "poster_path": "/yN14QZxPZIlIGKj444FzGhmCiZz.jpg",
+    "overview": "Picks up 25 years after the inhabitants of a quaint northwestern town are stunned when their homecoming queen is murdered.",
+    "vote_average": 8.2,
+    "media_type": "tv"
+  },
+  {
+    "id": 44012,
+    "title": "Jeanne Dielman, 23, quai du Commerce, 1080 Bruxelles",
+    "year": "1975",
+    "poster_path": "/fqfSu8Y1YSVFkoCJyiTXI6woYma.jpg",
+    "overview": "A lonely young widow lives with her son following an immutable order: while the boy is in school, she cares for their apartment, does chores, and receives clients in the afternoon.",
+    "vote_average": 7.367,
+    "media_type": "movie",
+    "genre": "Drama",
+    "runtime": 202
+  },
+  {
+    "id": 133919,
+    "title": "Scenes from a Marriage",
+    "year": "1974",
+    "poster_path": "/ArKEdvJesIktFX8OAhcdKAOLl6I.jpg",
+    "overview": "Johan and Marianne are married and seem to have it all. Their happiness, however, is a façade for a troubled relationship, which becomes even rockier when Johan admits that he's having an affair. Before long, the spouses separate and move towards finalizing their divorce, but they make attempts at reconciling. Even as they pursue other relationships, Johan and Marianne realize that they have a significant bond, but also many issues that hinder that connection.",
+    "vote_average": 8,
+    "media_type": "movie",
+    "genre": "Drama",
+    "runtime": 169
+  },
+  {
+    "id": 26302,
+    "title": "The Color of Pomegranates",
+    "year": "1969",
+    "poster_path": "/rMUbQf7RgsYgQ47AFf1wpoSt4dX.jpg",
+    "overview": "The life of the revered 18th-century Armenian poet and musician Sayat-Nova. Portraying events in the life of the artist from childhood up to his death, the movie addresses in particular his relationships with women, including his muse. The production tells Sayat-Nova's dramatic story by using both his poems and largely still camerawork, creating a work hailed as revolutionary by Mikhail Vartanov.",
+    "vote_average": 7.334,
+    "media_type": "movie",
+    "genre": "History",
     "runtime": 80
   },
   {
